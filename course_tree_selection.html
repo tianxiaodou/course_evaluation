@@ -207,6 +207,18 @@
             margin-left: 10px;
             font-style: italic;
         }
+        
+        .allocation-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .allocation-status.unallocated {
+            background-color: #dc3545;
+        }
 
         .controls {
             display: flex;
@@ -309,6 +321,7 @@
                 <div>
                     <button class="btn btn-outline" onclick="expandAll()">展开全部</button>
                     <button class="btn btn-outline" onclick="collapseAll()">折叠全部</button>
+                    <button class="btn btn-outline" onclick="toggleUnallocatedOnly()" id="filterBtn">仅展示未分配课程</button>
                 </div>
                 <div>
                     <button class="btn btn-secondary" onclick="clearSelection()">清空选择</button>
@@ -472,6 +485,37 @@
             // 页面加载完成后默认展开所有节点
             setTimeout(() => {
                 expandAll();
+                
+                // 初始化分配标识
+                initAllocationStatus();
+                
+                // 默认选中指定课程
+                const defaultCourses = [
+                    '科技史与人类未来',
+                    '逻辑与批判性思维',
+                    '环境科学与可持续发展'
+                ];
+                
+                defaultCourses.forEach(courseName => {
+                    // 找到课程名称对应的span元素（排除course-info）
+                    const courseSpans = document.querySelectorAll('.tree-level-2 span:not(.course-info)');
+                    courseSpans.forEach(span => {
+                        if (span.textContent === courseName) {
+                            // 找到父级label元素
+                            const label = span.closest('label');
+                            if (label) {
+                                // 找到对应的复选框并选中
+                                const checkbox = label.querySelector('input[type="checkbox"]');
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // 更新已选择列表
+                updateSelection();
             }, 100); // 延迟100ms确保所有元素都已加载完成
         });
 
@@ -510,7 +554,10 @@
             let html = '';
             selectedCheckboxes.forEach(checkbox => {
                 const label = checkbox.closest('label');
-                const courseName = label.querySelector('span:nth-child(3)').textContent;
+                // 根据是否有分配标识确定课程名称的位置
+                const hasAllocationStatus = label.querySelector('.allocation-status');
+                const courseNameIndex = hasAllocationStatus ? 3 : 2;
+                const courseName = label.querySelector(`span:nth-child(${courseNameIndex})`).textContent;
                 const courseInfo = label.querySelector('.course-info') ? label.querySelector('.course-info').textContent : '';
                 html += `<li>${courseName} ${courseInfo}</li>`;
             });
@@ -530,6 +577,36 @@
             selectedList.innerHTML = '<li>暂无选择</li>';
         }
 
+        // 已分配课程列表（实际应用中可能从服务器获取）
+        let allocatedCourses = ['文明对话与世界史纲', '新闻采访与写作'];
+        
+        // 初始化分配标识
+        function initAllocationStatus() {
+            const courseNodes = document.querySelectorAll('.tree-level-2');
+            
+            courseNodes.forEach(node => {
+                const label = node.querySelector('label');
+                const courseName = label.querySelector('span:nth-child(2)').textContent;
+                
+                // 检查课程是否未分配
+                if (!allocatedCourses.includes(courseName)) {
+                    // 创建并添加标识元素
+                    const statusDot = document.createElement('span');
+                    statusDot.className = 'allocation-status unallocated';
+                    statusDot.title = '未分配专家组';
+                    
+                    // 插入到课程名称前面
+                    const courseNameSpan = label.querySelector('span:nth-child(2)');
+                    label.insertBefore(statusDot, courseNameSpan);
+                }
+            });
+        }
+        
+        // 检查课程是否已分配
+        function isCourseAllocated(courseName) {
+            return allocatedCourses.includes(courseName);
+        }
+        
         // 确认分配
         function confirmSelection() {
             const selectedCheckboxes = document.querySelectorAll('.tree-level-2 input[type="checkbox"]:checked');
@@ -540,15 +617,86 @@
             }
             
             let selectedCourses = [];
+            let newAllocatedCourses = [];
+            
             selectedCheckboxes.forEach(checkbox => {
                 const label = checkbox.closest('label');
-                const courseName = label.querySelector('span:nth-child(3)').textContent;
+                const courseName = label.querySelector('span:nth-child(3)') ? label.querySelector('span:nth-child(3)').textContent : label.querySelector('span:nth-child(2)').textContent;
                 const courseInfo = label.querySelector('.course-info') ? label.querySelector('.course-info').textContent : '';
+                
                 selectedCourses.push(courseName + courseInfo);
+                
+                // 如果课程尚未分配，添加到新分配列表
+                if (!allocatedCourses.includes(courseName)) {
+                    newAllocatedCourses.push(courseName);
+                }
+            });
+            
+            // 更新已分配课程列表
+            allocatedCourses = [...new Set([...allocatedCourses, ...newAllocatedCourses])];
+            
+            // 为新分配的课程移除未分配标识
+            newAllocatedCourses.forEach(courseName => {
+                const courseNodes = document.querySelectorAll('.tree-level-2');
+                courseNodes.forEach(node => {
+                    const label = node.querySelector('label');
+                    const currentCourseName = label.querySelector('span:nth-child(3)') ? label.querySelector('span:nth-child(3)').textContent : label.querySelector('span:nth-child(2)').textContent;
+                    
+                    if (currentCourseName === courseName) {
+                        // 移除未分配标识
+                        const statusDot = label.querySelector('.allocation-status.unallocated');
+                        if (statusDot) {
+                            statusDot.remove();
+                        }
+                    }
+                });
             });
             
             alert('已选择 ' + selectedCourses.length + ' 门课程进行分配：\n\n' + selectedCourses.join('\n'));
-            // 这里可以添加实际的分配逻辑
+        }
+        
+        // 筛选仅展示未分配课程
+        let isUnallocatedOnly = false;
+        
+        function toggleUnallocatedOnly() {
+            isUnallocatedOnly = !isUnallocatedOnly;
+            const filterBtn = document.getElementById('filterBtn');
+            const courseNodes = document.querySelectorAll('.tree-level-2');
+            
+            if (isUnallocatedOnly) {
+                // 仅显示未分配课程
+                filterBtn.textContent = '显示全部课程';
+                filterBtn.classList.add('active');
+                
+                courseNodes.forEach(node => {
+                    const label = node.querySelector('label');
+                    // 排除course-info和allocation-status类的span来获取课程名称
+                    const courseNameSpan = label.querySelector('span:not(.course-info):not(.allocation-status)');
+                    const courseName = courseNameSpan ? courseNameSpan.textContent : '';
+                    
+                    if (allocatedCourses.includes(courseName)) {
+                        node.style.display = 'none';
+                    } else {
+                        node.style.display = 'block';
+                        // 确保父节点是展开的
+                        const parentNode = node.closest('.tree-level-1');
+                        if (parentNode) {
+                            const parentDetails = parentNode.closest('details');
+                            if (parentDetails) {
+                                parentDetails.open = true;
+                            }
+                        }
+                    }
+                });
+            } else {
+                // 显示全部课程
+                filterBtn.textContent = '仅展示未分配课程';
+                filterBtn.classList.remove('active');
+                
+                courseNodes.forEach(node => {
+                    node.style.display = 'block';
+                });
+            }
         }
 
         // 页面加载时展开根节点
