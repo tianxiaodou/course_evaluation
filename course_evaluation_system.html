@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程评估指标体系管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: none;
+            margin: 20px 0;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .controls-left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+            flex: 1;
+        }
+
+        .controls-right {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus,
+        .control-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: bold;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .level-1 {
+            font-weight: bold;
+            color: #667eea;
+            background-color: #f0f2ff;
+        }
+
+        .level-2 {
+            color: #495057;
+            padding-left: 30px;
+        }
+
+        .level-3 {
+            padding-left: 60px;
+            color: #6c757d;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #667eea;
+            padding: 5px;
+            margin-right: 5px;
+            transition: transform 0.3s;
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(90deg);
+        }
+
+        .materials-cell, .standard-cell {
+            max-width: 250px;
+            position: relative;
+        }
+
+        .materials-cell:hover, .standard-cell:hover {
+            background-color: #f8f9ff;
+            cursor: pointer;
+        }
+
+        .materials-content, .standard-content {
+            white-space: pre-wrap;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .controls-left {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .controls-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+            
+            .level-2 {
+                padding-left: 15px;
+            }
+            
+            .level-3 {
+                padding-left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">41</div>
+                <div class="stat-label">总观测点数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div class="stat-label">一级指标</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">18</div>
+                <div class="stat-label">二级指标</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="hasMaterials">0</div>
+                <div class="stat-label">已设置自评材料</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="controls-left">
+                <div class="control-group">
+                    <label>搜索指标：</label>
+                    <input type="text" id="searchInput" placeholder="输入关键词搜索...">
+                </div>
+                <div class="control-group">
+                    <label>筛选一级指标：</label>
+                    <select id="level1Filter">
+                        <option value="">全部显示</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>筛选二级指标：</label>
+                    <select id="level2Filter">
+                        <option value="">全部显示</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline; margin-left: 10px;" onclick="resetFilters()">重置</button>
+                </div>
+            </div>
+            <div class="controls-right">
+                <button class="btn btn-outline" onclick="importData()">导入数据</button>
+                <button class="btn btn-outline" onclick="exportData()">导出数据</button>
+                <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="evaluationTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">序号</th>
+                            <th style="width: 80px;">操作</th>
+                            <th style="width: 200px;">一级指标</th>
+                            <th style="width: 200px;">二级指标</th>
+                            <th style="width: 300px;">三级观测点</th>
+                            <th style="width: 280px;">自评材料</th>
+                            <th style="width: 350px;">评估标准</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑指标模态框 -->
+    <div id="indicatorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">新增指标</h2>
+            <form id="indicatorForm">
+                <div class="form-group">
+                    <label for="level1Input">一级指标：</label>
+                    <input type="text" id="level1Input" required>
+                </div>
+                <div class="form-group">
+                    <label for="level2Input">二级指标：</label>
+                    <input type="text" id="level2Input" required>
+                </div>
+                <div class="form-group">
+                    <label for="level3Input">三级观测点：</label>
+                    <textarea id="level3Input" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="materialsInput">自评材料：</label>
+                    <textarea id="materialsInput" rows="4" placeholder="请输入需要提供的自评支撑材料..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="standardInput">评估标准：</label>
+                    <textarea id="standardInput" rows="4" placeholder="请输入评估标准，例如：A等级需要满足...；C等级需要满足..."></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()" style="margin-right: 10px;">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 课程评估指标数据
+        const evaluationData = [
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.1 课程目标定位",
+                level3: "1.1.1课程目标定位准确，符合学校办学定位和人才培养目标",
+                materials: "1. 课程教学大纲\n2. 人才培养方案\n3. 课程目标设定说明文档",
+                standard: "A等级：课程目标与学校办学定位高度契合，明确支撑具体人才培养目标；C等级：课程目标与学校办学定位基本符合，对人才培养目标的支撑不够明确。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.1 课程目标定位",
+                level3: "1.1.2课程目标面向产出，以培养学生能力为主线，支撑毕业要求",
+                materials: "1. 课程目标与毕业要求对应关系矩阵\n2. 能力导向的课程目标描述\n3. 学生能力培养案例",
+                standard: "A等级：课程目标明确以能力培养为核心，与毕业要求有清晰对应关系；C等级：课程目标有一定能力导向，但与毕业要求的对应关系不够清晰。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.1 课程目标定位",
+                level3: "1.1.3课程目标具有清晰丰富的维度、层次，涵盖知识、能力、素质培养",
+                materials: "1. 多维度课程目标设计文档\n2. 知识-能力-素质目标分解表\n3. 目标层次结构图",
+                standard: "A等级：课程目标涵盖知识、能力、素质三个维度，层次清晰，表述具体；C等级：课程目标涵盖两个维度，层次基本清晰。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.1 课程目标定位",
+                level3: "1.1.4课程目标可实现、可测量",
+                materials: "1. 课程目标测量指标体系\n2. 目标达成度计算方法\n3. 可测量目标示例",
+                standard: "A等级：所有课程目标均可通过具体指标进行量化测量；C等级：大部分课程目标可测量，部分目标测量方法不够具体。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.2 教学内容高阶性、创新性和挑战度",
+                level3: "1.2.1课程知识点清楚，知识点之间具有清晰的逻辑结构",
+                materials: "1. 课程知识体系结构图\n2. 知识点逻辑关系说明\n3. 教学内容组织方案",
+                standard: "A等级：知识点体系完整，逻辑关系清晰，形成完整知识网络；C等级：知识点基本清楚，部分逻辑关系需要进一步明确。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.2 教学内容高阶性、创新性和挑战度",
+                level3: "1.2.2课程教学内容与课程目标对应，体现知识、能力、素质有机融合",
+                materials: "1. 教学内容与目标对应矩阵\n2. 教学内容设计说明\n3. 知识能力素质融合案例",
+                standard: "A等级：教学内容与课程目标高度对应，三维目标融合自然；C等级：教学内容与目标基本对应，融合程度一般。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.2 教学内容高阶性、创新性和挑战度",
+                level3: "1.2.3课程内容具有合理的深度广度创新性，要求学生加大学 习投入，注重培养学生解决复杂问题的综合能力和高阶思维，增强学生经过刻苦学习收获能力和素质提高的成就感",
+                materials: "1. 教学内容深度广度分析报告\n2. 创新性教学内容设计\n3. 挑战性作业案例\n4. 学生能力提升证明材料",
+                standard: "A等级：教学内容深度广度合理，创新性突出，挑战度适中，学生投入度高；C等级：教学内容深度广度基本合理，创新性和挑战度有待提升。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.3 课程思政",
+                level3: "1.3.1 课程内容坚持知识传 授与价值引领相统一、专业技能训练和人格养成相统一",
+                materials: "1. 课程思政元素挖掘报告\n2. 思政教育与专业教育融合案例\n3. 价值引领活动记录",
+                standard: "A等级：知识传授与价值引领深度融合，专业技能与人格养成有机统一；C等级：知识传授与价值引领基本统一，融合程度有待加强。"
+            },
+            {
+                level1: "1. 课程目标与内容评价",
+                level2: "1.3 课程思政",
+                level3: "1.3.2 充分发掘课程内容中的思想政治教育元素，与专业教育巧妙融合",
+                materials: "1. 思政元素挖掘清单\n2. 思政教育融入教学设计\n3. 融合教育效果反馈",
+                standard: "A等级：思政元素挖掘充分，融合自然巧妙，教育效果显著；C等级：思政元素有一定挖掘，融合基本自然。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.1 教学设计",
+                level3: "2.1.1有科学完备的教学大纲、教案、课程计划表等教学资料",
+                materials: "1. 课程教学大纲\n2. 详细教案\n3. 课程进度计划表\n4. 教学资料清单",
+                standard: "A等级：教学资料完备、规范，更新及时；C等级：教学资料基本完备，部分资料需要更新完善。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.2 教学方法与手段",
+                level3: "2.2.1教师教学理念先进，教学方法多样化，注重启发式教学，培养学生独立思考能力",
+                materials: "1. 教学方法创新案例\n2. 启发式教学实施记录\n3. 学生思维能力培养成果",
+                standard: "A等级：教学方法多样先进，启发式教学效果显著；C等级：教学方法基本多样，启发式教学有一定体现。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.2 教学方法与手段",
+                level3: "2.2.2教师教学手段先进，积极运用信息技术，实现线上线下混合式教学",
+                materials: "1. 信息化教学手段应用报告\n2. 混合式教学设计\n3. 线上教学活动记录",
+                standard: "A等级：信息化教学手段应用熟练，混合式教学效果好；C等级：信息化教学手段基本应用，混合式教学有待加强。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.2 教学方法与手段",
+                level3: "2.2.3课堂教学组织有序，时间分配合理，课堂氛围活跃，学生参与度高",
+                materials: "1. 课堂教学组织方案\n2. 课堂互动记录\n3. 学生参与度统计\n4. 课堂氛围评价",
+                standard: "A等级：课堂组织有序，氛围活跃，学生参与度高；C等级：课堂组织基本有序，学生参与度一般。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.2 教学方法与手段",
+                level3: "2.2.4学业指导及时有效，不仅帮助学生掌握学习内容，还引导学 生了解和掌握有效的学习方式",
+                materials: "1. 学业指导活动记录\n2. 学习方法指导材料\n3. 学生学习方法改进案例",
+                standard: "A等级：学业指导及时有效，学习方法指导系统全面；C等级：学业指导基本及时，学习方法指导有待加强。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.2 教学方法与手段",
+                level3: "2.2.5针对不同层次、类型的学生需要做到因材施教，个性化分类 培养",
+                materials: "1. 因材施教实施方案\n2. 分层次教学设计\n3. 个性化培养案例\n4. 学生差异化发展成果",
+                standard: "A等级：因材施教措施得力，个性化培养效果显著；C等级：有一定因材施教措施，个性化培养有待加强。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.3课堂教学评价",
+                level3: "2.3.1近三轮学生网上评教成绩的平均值",
+                materials: "1. 近三轮学生网上评教成绩统计\n2. 评教结果分析报告\n3. 改进措施记录",
+                standard: "A等级：学生评教平均分≥90分；C等级：学生评教平均分≥80分。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.3课堂教学评价",
+                level3: "2.3.2同行评教成绩(不少于5名同行教师，取平均分)",
+                materials: "1. 同行评教评分表\n2. 同行评教反馈意见\n3. 同行评教总结报告",
+                standard: "A等级：同行评教平均分≥85分；C等级：同行评教平均分≥75分。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.3课堂教学评价",
+                level3: "2.3.3专家评教成绩（不少于3次实地评教，取平均分）",
+                materials: "1. 专家评教评分表\n2. 专家评教意见建议\n3. 专家评教报告",
+                standard: "A等级：专家评教平均分≥90分；C等级：专家评教平均分≥80分。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.4 课程教学改革成效",
+                level3: "2.4.1课程教学改革思路及举措清晰合理，在探索智慧教育新形 态、推动课堂重构方面采取积极行动",
+                materials: "1. 教学改革方案\n2. 智慧教育实施记录\n3. 课堂重构案例\n4. 改革成效总结",
+                standard: "A等级：改革思路清晰，举措得力，智慧教育应用成效显著；C等级：改革思路基本清晰，举措基本得力。"
+            },
+            {
+                level1: "2. 课程教学过程与改革成效评价",
+                level2: "2.4 课程教学改革成效",
+                level3: "2.4.2课程在教学实施、教学质量提升方面的改革成效，课程建 设获得荣誉",
+                materials: "1. 改革成效数据统计\n2. 教学质量提升证明\n3. 获奖证书复印件\n4. 改革成果展示",
+                standard: "A等级：改革成效显著，获得省级以上荣誉或奖励；C等级：改革成效明显，获得校级荣誉。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.1 课程考核制度",
+                level3: "3.1.1课 程建立了科学合理的评价方式，综合运用过程性考核和结果性考核等多种考核方式，各种考核评价的比重设置合理",
+                materials: "1. 课程考核方案\n2. 过程性和结果性考核记录\n3. 考核比重设置说明\n4. 考核方式创新案例",
+                standard: "A等级：考核方式科学合理，过程性与结果性考核有机结合；C等级：考核方式基本合理，考核类型基本齐全。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.1 课程考核制度",
+                level3: "3.1.2课 程考核内容符合课程目标的要求，考核内容及方式能有效考核学生相关能力，显示学习效果",
+                materials: "1. 考核内容与目标对应关系表\n2. 能力考核设计\n3. 学习效果评价数据\n4. 考核有效性分析",
+                standard: "A等级：考核内容与目标高度对应，能力考核有效，学习效果明显；C等级：考核内容与目标基本对应，能力考核基本有效。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.2课程考核档案评价",
+                level3: "3.2.1课程考核的实施按照课程考核方式的设定执行",
+                materials: "1. 考核实施记录\n2. 考核方式执行情况检查表\n3. 考核过程监控记录\n4. 执行情况自评报告",
+                standard: "A等级：严格按照考核方式执行，无偏差；C等级：基本按照考核方式执行，有少量偏差。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.2课程考核档案评价",
+                level3: "3.2.2按照学校关于课程考核的基本要求，相关考核档案、审批手续齐全、规范，考核档案管理存放规范有序",
+                materials: "1. 考核档案清单\n2. 审批手续文件\n3. 档案管理规范\n4. 档案存放记录",
+                standard: "A等级：档案齐全规范，管理有序；C等级：档案基本齐全，管理基本规范。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.3 课程目标达成情况",
+                level3: "3.3.1撰写课程目标达成情况报告，基本要素齐全，体现OBE 理念，进行 深入总结分析",
+                materials: "1. 课程目标达成情况报告\n2. OBE理念应用说明\n3. 达成度分析图表\n4. 总结反思记录",
+                standard: "A等级：报告要素齐全，OBE理念体现充分，分析深入；C等级：报告要素基本齐全，OBE理念有一定体现。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.3 课程目标达成情况",
+                level3: "3.3.2课程目标达成情况采用多种评价方式，包括直接的量化评价和间接 的调查问卷评价等，多维呈现学生能力达成情况；量化计算科学合理，结论令人信服",
+                materials: "1. 多元评价方式设计\n2. 量化评价数据\n3. 问卷调查结果\n4. 达成度计算过程",
+                standard: "A等级：评价方式多样，量化计算科学，结论可信；C等级：评价方式基本多样，量化计算基本合理。"
+            },
+            {
+                level1: "3. 课程考核与档案评价",
+                level2: "3.3 课程目标达成情况",
+                level3: "3.3.3体现 \" 持续改进 \" 理念，针对问题提出的改进措施合理，真改真 进",
+                materials: "1. 问题识别分析\n2. 改进措施方案\n3. 改进实施记录\n4. 改进效果评估",
+                standard: "A等级：问题识别准确，改进措施得力，效果显著；C等级：问题识别基本准确，改进措施基本得力。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.1 课程教学团队",
+                level3: "4.1.1团队师德师风良好，无不良记录",
+                materials: "1. 团队师德师风建设方案\n2. 师德师风评价记录\n3. 师德师风培训记录\n4. 无不良记录证明",
+                standard: "A等级：师德师风建设成效显著，无任何不良记录；C等级：师德师风良好，无重大不良记录。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.1 课程教学团队",
+                level3: "4.1.2课程负责人教学水平、教研水平高，具有引领示范效应",
+                materials: "1. 课程负责人资历证明\n2. 教学水平评价材料\n3. 教研成果展示\n4. 引领示范案例",
+                standard: "A等级：教学教研水平突出，引领示范效应显著；C等级：教学教研水平较高，有一定示范作用。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.1 课程教学团队",
+                level3: "4.1.3团队教师数量与结构能够满足课程教学的基本需要，教师教学投入 热情饱满",
+                materials: "1. 团队人员结构表\n2. 教学投入情况统计\n3. 教师工作量统计\n4. 教学热情评价",
+                standard: "A等级：团队结构合理，教学投入度高；C等级：团队结构基本合理，教学投入度较高。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.1 课程教学团队",
+                level3: "4.1.4教学团队注重教学研究，开展教学研讨，内部协作机制良好，团队 建设卓有成效",
+                materials: "1. 教学研究成果\n2. 教学研讨活动记录\n3. 协作机制文件\n4. 团队建设成效",
+                standard: "A等级：教研活动频繁，协作机制完善，建设成效显著；C等级：教研活动定期，协作机制良好。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.2 \"互联网+教育\"的网络教学资源建设",
+                level3: "4.2.1开展智慧课堂及课程网络教学资源建设，并积极运用",
+                materials: "1. 智慧课堂建设方案\n2. 网络教学资源库\n3. 资源使用统计\n4. 应用效果评估",
+                standard: "A等级：资源建设完备，应用效果显著；C等级：资源建设基本完备，应用效果良好。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.3 课内课外学习资源及学 习支持",
+                level3: "4.3.1教材选用符合教育部和学校教材选用规定，体现思想性、科学性与时代性，做好马克思主义理论研究和建设工程重点教材统一使用",
+                materials: "1. 教材选用审批表\n2. 教材思想性科学性分析\n3. 马工程教材使用证明\n4. 教材使用效果评价",
+                standard: "A等级：教材选用规范，完全符合要求；C等级：教材选用基本规范，基本符合要求。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.3 课内课外学习资源及学 习支持",
+                level3: "4.3.2实验（实训）教学条件满足教学要求，基本实验活动安排能达到学生人人动手的要求，学生满意",
+                materials: "1. 实验教学条件清单\n2. 实验活动安排表\n3. 学生动手情况统计\n4. 学生满意度调查",
+                standard: "A等级：实验条件优良，学生全员参与，满意度高；C等级：实验条件良好，学生参与度较高。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.3 课内课外学习资源及学 习支持",
+                level3: "4.3.3教师积极总结教学经验，主编或参编教材（包括云教材），并根据学生使用的反映及时优化",
+                materials: "1. 教材编写成果\n2. 教学经验总结\n3. 教材使用反馈\n4. 教材优化记录",
+                standard: "A等级：教材编写成果丰富，经验总结深入，优化及时；C等级：有教材编写成果，经验有总结。"
+            },
+            {
+                level1: "4. 课程资源与支持条件评价",
+                level2: "4.3 课内课外学习资源及学 习支持",
+                level3: "4.3.4提供丰富且有效的课外学习资源，指导学生高效获取并使用学习资源",
+                materials: "1. 课外学习资源清单\n2. 资源获取指导\n3. 使用效果统计\n4. 学生使用反馈",
+                standard: "A等级：资源丰富有效，指导详细到位；C等级：资源基本丰富，指导基本到位。"
+            },
+            {
+                level1: "5. 持续改进评价",
+                level2: "5.1 质量自我评价机制及持续改进措施 与效果",
+                level3: "5.1.1注重教学反思，在发现问题、持续改进方面建立起有效的机制，保证课程教学质量逐步提升",
+                materials: "1. 教学反思记录\n2. 问题发现机制\n3. 改进措施实施记录\n4. 质量提升数据",
+                standard: "A等级：反思机制完善，改进效果显著；C等级：有一定反思机制，改进效果明显。"
+            },
+            {
+                level1: "5. 持续改进评价",
+                level2: "5.1 质量自我评价机制及持续改进措施 与效果",
+                level3: "5.1.2依据内部和外部评价结果，发现培养目标、毕业要求等存在的问题，并及时反馈给相关责任人，进行系统化、持续化的改进",
+                materials: "1. 内外评价结果分析\n2. 问题识别报告\n3. 反馈机制记录\n4. 系统改进方案",
+                standard: "A等级：评价分析深入，反馈及时有效，改进系统化；C等级：评价分析基本深入，反馈基本及时。"
+            }
+        ];
+
+        let filteredData = [...evaluationData];
+        let currentEditIndex = -1;
+
+        // 初始化页面
+        function init() {
+            renderTable();
+            populateFilters();
+            updateStats();
+            bindEvents();
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            filteredData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.style.cursor = 'pointer';
+                
+                // 为整行添加点击事件，但排除按钮区域
+                row.addEventListener('click', function(e) {
+                    // 如果点击的是按钮或按钮内的元素，不触发行点击事件
+                    if (e.target.closest('button') || e.target.tagName === 'BUTTON') {
+                        return;
+                    }
+                    editIndicator(index);
+                });
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <button class="expand-btn" onclick="toggleExpand(${index})">▶</button>
+                        <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editIndicator(${index})">编辑</button>
+                        <button style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; text-decoration: underline;" onclick="deleteIndicator(${index})">删除</button>
+                    </td>
+                    <td class="level-1">${item.level1}</td>
+                    <td class="level-2">${item.level2}</td>
+                    <td class="level-3">${item.level3}</td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${item.materials || '暂无自评材料要求'}</div>
+                    </td>
+                    <td class="standard-cell">
+                        <div class="standard-content">${item.standard || '暂无评估标准'}</div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+
+        }
+
+        // 字段编辑功能
+        function editField(index, field) {
+            const currentValue = filteredData[index][field] || '';
+            const newValue = prompt(`请编辑${field === 'materials' ? '自评材料' : '评估标准'}:`, currentValue);
+            
+            if (newValue !== null) {
+                filteredData[index][field] = newValue;
+                
+                // 更新原始数据
+                const originalIndex = evaluationData.findIndex(item => 
+                    item.level1 === filteredData[index].level1 &&
+                    item.level2 === filteredData[index].level2 &&
+                    item.level3 === filteredData[index].level3
+                );
+                if (originalIndex !== -1) {
+                    evaluationData[originalIndex][field] = newValue;
+                }
+                
+                renderTable();
+                updateStats();
+            }
+        }
+
+        // 展开/收起功能
+        function toggleExpand(index) {
+            const btn = event.target;
+            const row = btn.closest('tr');
+            const nextRow = row.nextElementSibling;
+            
+            if (nextRow && nextRow.classList.contains('expanded-row')) {
+                nextRow.remove();
+                btn.classList.remove('expanded');
+            } else {
+                const expandedRow = document.createElement('tr');
+                expandedRow.className = 'expanded-row';
+                const fullMaterials = filteredData[index].materials || '暂无自评材料要求';
+                const fullStandard = filteredData[index].standard || '暂无评估标准';
+
+                expandedRow.innerHTML = `
+                    <td colspan="7" style="background: #f8f9ff; padding: 20px;">
+                        <h4 style="margin-bottom: 10px; color: #667eea;">详细信息</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h5 style="color: #495057; margin: 0;">自评材料要求：</h5>
+                                    <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editField(${index}, 'materials')">编辑</button>
+                                </div>
+                                <div style="white-space: pre-line; color: #6c757d; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">${fullMaterials}</div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h5 style="color: #495057; margin: 0;">评估标准：</h5>
+                                    <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editField(${index}, 'standard')">编辑</button>
+                                </div>
+                                <div style="white-space: pre-line; color: #6c757d; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">${fullStandard}</div>
+                            </div>
+                        </div>
+                    </td>
+                `;
+                
+                row.after(expandedRow);
+                btn.classList.add('expanded');
+            }
+        }
+
+        // 填充筛选器
+        function populateFilters() {
+            const level1Filter = document.getElementById('level1Filter');
+            const level2Filter = document.getElementById('level2Filter');
+
+            // 获取唯一的一级指标
+            const level1Options = [...new Set(evaluationData.map(item => item.level1))];
+            level1Options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                level1Filter.appendChild(opt);
+            });
+
+            // 获取唯一的二级指标
+            const level2Options = [...new Set(evaluationData.map(item => item.level2))];
+            level2Options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                level2Filter.appendChild(opt);
+            });
+        }
+
+        // 筛选功能
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const level1Filter = document.getElementById('level1Filter').value;
+            const level2Filter = document.getElementById('level2Filter').value;
+
+            filteredData = evaluationData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.level1.toLowerCase().includes(searchTerm) ||
+                    item.level2.toLowerCase().includes(searchTerm) ||
+                    item.level3.toLowerCase().includes(searchTerm) ||
+                    (item.materials && item.materials.toLowerCase().includes(searchTerm)) ||
+                    (item.standard && item.standard.toLowerCase().includes(searchTerm));
+
+                const matchesLevel1 = !level1Filter || item.level1 === level1Filter;
+                const matchesLevel2 = !level2Filter || item.level2 === level2Filter;
+
+                return matchesSearch && matchesLevel1 && matchesLevel2;
+            });
+
+            renderTable();
+            updateStats();
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('level1Filter').value = '';
+            document.getElementById('level2Filter').value = '';
+            filterData();
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalCount').textContent = filteredData.length;
+            
+            const hasMaterialsCount = filteredData.filter(item => 
+                item.materials && item.materials.trim() !== ''
+            ).length;
+            document.getElementById('hasMaterials').textContent = hasMaterialsCount;
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('level1Filter').addEventListener('change', filterData);
+            document.getElementById('level2Filter').addEventListener('change', filterData);
+
+            // 模态框事件
+            const modal = document.getElementById('indicatorModal');
+            const span = document.getElementsByClassName('close')[0];
+            
+            span.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            // 表单提交事件
+            document.getElementById('indicatorForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveIndicator();
+            });
+        }
+
+        // 新增指标
+        function addNewIndicator() {
+            currentEditIndex = -1;
+            document.getElementById('modalTitle').textContent = '新增指标';
+            document.getElementById('indicatorForm').reset();
+            document.getElementById('indicatorModal').style.display = 'block';
+        }
+
+        // 编辑指标
+        function editIndicator(index) {
+            currentEditIndex = index;
+            const item = filteredData[index];
+            
+            document.getElementById('modalTitle').textContent = '编辑指标';
+            document.getElementById('level1Input').value = item.level1;
+            document.getElementById('level2Input').value = item.level2;
+            document.getElementById('level3Input').value = item.level3;
+            document.getElementById('materialsInput').value = item.materials || '';
+            document.getElementById('standardInput').value = item.standard || '';
+            
+            document.getElementById('indicatorModal').style.display = 'block';
+        }
+
+        // 保存指标
+        function saveIndicator() {
+            const formData = {
+                level1: document.getElementById('level1Input').value,
+                level2: document.getElementById('level2Input').value,
+                level3: document.getElementById('level3Input').value,
+                materials: document.getElementById('materialsInput').value,
+                standard: document.getElementById('standardInput').value
+            };
+
+            if (currentEditIndex === -1) {
+                // 新增
+                evaluationData.push(formData);
+            } else {
+                // 编辑
+                const originalIndex = evaluationData.findIndex(item => 
+                    item.level1 === filteredData[currentEditIndex].level1 &&
+                    item.level2 === filteredData[currentEditIndex].level2 &&
+                    item.level3 === filteredData[currentEditIndex].level3
+                );
+                if (originalIndex !== -1) {
+                    evaluationData[originalIndex] = formData;
+                }
+            }
+
+            filterData();
+            document.getElementById('indicatorModal').style.display = 'none';
+        }
+
+        // 删除指标
+        function deleteIndicator(index) {
+            if (confirm('确定要删除这个指标吗？')) {
+                const item = filteredData[index];
+                const originalIndex = evaluationData.findIndex(data => 
+                    data.level1 === item.level1 &&
+                    data.level2 === item.level2 &&
+                    data.level3 === item.level3
+                );
+                
+                if (originalIndex !== -1) {
+                    evaluationData.splice(originalIndex, 1);
+                    filterData();
+                }
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('indicatorModal').style.display = 'none';
+        }
+
+        // 导出数据
+        function exportData() {
+            const dataStr = JSON.stringify(evaluationData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'course_evaluation_data.json';
+            link.click();
+        }
+
+        // 导入数据
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            evaluationData.length = 0;
+                            evaluationData.push(...data);
+                            filterData();
+                            alert('数据导入成功！');
+                        } catch (error) {
+                            alert('文件格式错误！');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
