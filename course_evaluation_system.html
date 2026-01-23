@@ -403,6 +403,7 @@
                 <button class="btn btn-outline" onclick="importData()">导入数据</button>
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
+                <button class="btn btn-primary" onclick="openScoringRules()">评分规则</button>
             </div>
         </div>
 
@@ -416,6 +417,7 @@
                             <th style="width: 200px;">一级指标</th>
                             <th style="width: 200px;">二级指标</th>
                             <th style="width: 300px;">三级观测点</th>
+                            <th style="width: 100px;">权重</th>
                             <th style="width: 280px;">自评材料</th>
                             <th style="width: 350px;">评估标准</th>
                         </tr>
@@ -447,6 +449,10 @@
                     <textarea id="level3Input" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="weightInput">观测点权重：</label>
+                    <input type="number" id="weightInput" min="0" step="0.1" placeholder="请输入权重值...">
+                </div>
+                <div class="form-group">
                     <label for="materialsInput">自评材料：</label>
                     <textarea id="materialsInput" rows="4" placeholder="请输入需要提供的自评支撑材料..."></textarea>
                 </div>
@@ -457,6 +463,105 @@
                 <div style="text-align: center; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()" style="margin-right: 10px;">取消</button>
                     <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 评分规则配置模态框 -->
+    <div id="scoringRulesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>评分规则配置</h2>
+            <form id="scoringRulesForm" onsubmit="event.preventDefault(); saveScoringRules();">
+                <div class="form-group">
+                    <label for="scoringType">打分类型：</label>
+                    <select id="scoringType" onchange="toggleScoringOptions()">
+                        <option value="direct">直接打分</option>
+                        <option value="grade">打等级 (ABCD)</option>
+                    </select>
+                </div>
+                
+                <div id="gradeConversionSection" style="display: none;">
+                    <div class="form-group">
+                        <label>等级得分转换：</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <div>
+                                <label>A等级：</label>
+                                <input type="number" id="gradeA" min="0" max="100" step="0.1" value="90">
+                            </div>
+                            <div>
+                                <label>B等级：</label>
+                                <input type="number" id="gradeB" min="0" max="100" step="0.1" value="80">
+                            </div>
+                            <div>
+                                <label>C等级：</label>
+                                <input type="number" id="gradeC" min="0" max="100" step="0.1" value="60">
+                            </div>
+                            <div>
+                                <label>D等级：</label>
+                                <input type="number" id="gradeD" min="0" max="100" step="0.1" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>结论段位配置：</label>
+                    <div id="conclusionSections">
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="优秀" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="90" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="100" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="良好" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="80" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="89" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="一般" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="60" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="79" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="不合格" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="0" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="59" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addConclusionSection()" style="margin-top: 10px;">添加段位</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="整改流程段位">需要进行整改的段位：</label>
+                    <select id="rectificationGrade">
+                        <option value="不合格">不合格</option>
+                        <option value="一般">一般</option>
+                        <option value="良好">良好</option>
+                        <option value="优秀">优秀</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeScoringRulesModal()" style="margin-right: 10px;">取消</button>
+                    <button type="submit" class="btn btn-primary">保存配置</button>
                 </div>
             </form>
         </div>
@@ -736,11 +841,20 @@
         let filteredData = [...evaluationData];
         let currentEditIndex = -1;
 
-        // 初始化页面
+        // 为现有数据添加权重假数据
+        function addWeightData() {
+            evaluationData.forEach(item => {
+                // 为所有指标重新生成3-5之间的随机整数
+                item.weight = Math.floor(Math.random() * 3) + 3;
+            });
+        }
+
+        // 初始化
         function init() {
+            addWeightData();
             renderTable();
-            populateFilters();
             updateStats();
+            populateFilters();
             bindEvents();
         }
 
@@ -772,6 +886,7 @@
                     <td class="level-1">${item.level1}</td>
                     <td class="level-2">${item.level2}</td>
                     <td class="level-3">${item.level3}</td>
+                    <td class="weight-cell">${item.weight || '0'}</td>
                     <td class="materials-cell">
                         <div class="materials-content">${item.materials || '暂无自评材料要求'}</div>
                     </td>
@@ -961,6 +1076,7 @@
             document.getElementById('level1Input').value = item.level1;
             document.getElementById('level2Input').value = item.level2;
             document.getElementById('level3Input').value = item.level3;
+            document.getElementById('weightInput').value = item.weight || '';
             document.getElementById('materialsInput').value = item.materials || '';
             document.getElementById('standardInput').value = item.standard || '';
             
@@ -973,6 +1089,7 @@
                 level1: document.getElementById('level1Input').value,
                 level2: document.getElementById('level2Input').value,
                 level3: document.getElementById('level3Input').value,
+                weight: document.getElementById('weightInput').value || '0',
                 materials: document.getElementById('materialsInput').value,
                 standard: document.getElementById('standardInput').value
             };
@@ -1016,6 +1133,111 @@
         // 关闭模态框
         function closeModal() {
             document.getElementById('indicatorModal').style.display = 'none';
+        }
+
+        // 打开评分规则弹窗
+        function openScoringRules() {
+            const modal = document.getElementById('scoringRulesModal');
+            modal.style.display = 'block';
+            
+            // 绑定关闭按钮事件
+            const closeBtn = modal.querySelector('.close');
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // 关闭评分规则弹窗
+        function closeScoringRulesModal() {
+            document.getElementById('scoringRulesModal').style.display = 'none';
+        }
+
+        // 切换打分类型选项
+        function toggleScoringOptions() {
+            const scoringType = document.getElementById('scoringType').value;
+            const gradeSection = document.getElementById('gradeConversionSection');
+            
+            if (scoringType === 'grade') {
+                gradeSection.style.display = 'block';
+            } else {
+                gradeSection.style.display = 'none';
+            }
+        }
+
+        // 添加结论段位
+        function addConclusionSection() {
+            const container = document.getElementById('conclusionSections');
+            const sectionCount = container.children.length;
+            
+            const newSection = document.createElement('div');
+            newSection.className = 'conclusion-section';
+            newSection.style.marginBottom = '10px';
+            newSection.style.padding = '10px';
+            newSection.style.border = '1px solid #ddd';
+            newSection.style.borderRadius = '5px';
+            
+            newSection.innerHTML = `
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" placeholder="段位名称" style="width: 100px;">
+                    <input type="number" placeholder="最低分" style="width: 80px;">
+                    <span>-</span>
+                    <input type="number" placeholder="最高分" style="width: 80px;">
+                    <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                </div>
+            `;
+            
+            container.appendChild(newSection);
+        }
+
+        // 删除结论段位
+        function removeConclusionSection(button) {
+            const section = button.closest('.conclusion-section');
+            if (section) {
+                section.remove();
+            }
+        }
+
+        // 保存评分规则配置
+        function saveScoringRules() {
+            const scoringType = document.getElementById('scoringType').value;
+            const gradeConversion = {
+                A: document.getElementById('gradeA').value,
+                B: document.getElementById('gradeB').value,
+                C: document.getElementById('gradeC').value,
+                D: document.getElementById('gradeD').value
+            };
+            
+            const conclusionSections = [];
+            document.querySelectorAll('.conclusion-section').forEach(section => {
+                const inputs = section.querySelectorAll('input');
+                conclusionSections.push({
+                    name: inputs[0].value,
+                    minScore: parseFloat(inputs[1].value),
+                    maxScore: parseFloat(inputs[2].value)
+                });
+            });
+            
+            const rectificationGrade = document.getElementById('rectificationGrade').value;
+            
+            const scoringRules = {
+                scoringType,
+                gradeConversion,
+                conclusions: conclusionSections,
+                rectificationGrade
+            };
+            
+            // 保存到本地存储
+            localStorage.setItem('scoringRules', JSON.stringify(scoringRules));
+            
+            alert('评分规则配置已保存！');
+            closeScoringRulesModal();
         }
 
         // 导出数据
