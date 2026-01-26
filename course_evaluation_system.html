@@ -413,13 +413,13 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;">序号</th>
-                            <th style="width: 80px;">操作</th>
                             <th style="width: 200px;">一级指标</th>
                             <th style="width: 200px;">二级指标</th>
                             <th style="width: 300px;">三级观测点</th>
                             <th style="width: 100px;">权重</th>
                             <th style="width: 280px;">自评材料</th>
                             <th style="width: 350px;">评估标准</th>
+                            <th style="width: 80px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -878,11 +878,6 @@
                 
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td>
-                        <button class="expand-btn" onclick="toggleExpand(${index})">▶</button>
-                        <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editIndicator(${index})">编辑</button>
-                        <button style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; text-decoration: underline;" onclick="deleteIndicator(${index})">删除</button>
-                    </td>
                     <td class="level-1">${item.level1}</td>
                     <td class="level-2">${item.level2}</td>
                     <td class="level-3">${item.level3}</td>
@@ -892,6 +887,11 @@
                     </td>
                     <td class="standard-cell">
                         <div class="standard-content">${item.standard || '暂无评估标准'}</div>
+                    </td>
+                    <td>
+                       
+                        <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editIndicator(${index})">编辑</button>
+                        <button style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; text-decoration: underline;" onclick="deleteIndicator(${index})">删除</button>
                     </td>
                 `;
                 
@@ -940,7 +940,7 @@
                 const fullStandard = filteredData[index].standard || '暂无评估标准';
 
                 expandedRow.innerHTML = `
-                    <td colspan="7" style="background: #f8f9ff; padding: 20px;">
+                    <td colspan="8" style="background: #f8f9ff; padding: 20px;">
                         <h4 style="margin-bottom: 10px; color: #667eea;">详细信息</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
