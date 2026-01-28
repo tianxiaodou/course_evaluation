@@ -400,9 +400,9 @@
                 </div>
             </div>
             <div class="controls-right">
-                <button class="btn btn-outline" onclick="importData()">导入数据</button>
+                <!-- <button class="btn btn-outline" onclick="importData()">导入数据</button> -->
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
-                <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
+                <!-- <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button> -->
                 <button class="btn btn-primary" onclick="openScoringRules()">评分规则</button>
             </div>
         </div>
@@ -419,7 +419,7 @@
                             <th style="width: 100px;">权重</th>
                             <th style="width: 280px;">自评材料</th>
                             <th style="width: 350px;">评估标准</th>
-                            <th style="width: 80px;">操作</th>
+                            <!-- <th style="width: 80px;">操作</th> -->
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -888,11 +888,11 @@
                     <td class="standard-cell">
                         <div class="standard-content">${item.standard || '暂无评估标准'}</div>
                     </td>
-                    <td>
-                       
+                    <!-- <td>
+                        
                         <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editIndicator(${index})">编辑</button>
                         <button style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; text-decoration: underline;" onclick="deleteIndicator(${index})">删除</button>
-                    </td>
+                    </td> -->
                 `;
                 
                 tbody.appendChild(row);
@@ -940,7 +940,7 @@
                 const fullStandard = filteredData[index].standard || '暂无评估标准';
 
                 expandedRow.innerHTML = `
-                    <td colspan="8" style="background: #f8f9ff; padding: 20px;">
+                    <td colspan="7" style="background: #f8f9ff; padding: 20px;">
                         <h4 style="margin-bottom: 10px; color: #667eea;">详细信息</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
