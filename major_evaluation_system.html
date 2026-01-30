@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业评估指标体系管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: none;
+            margin: 20px 0;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .controls-left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+            flex: 1;
+        }
+
+        .controls-right {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus,
+        .control-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: bold;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .level-1 {
+            font-weight: bold;
+            color: #667eea;
+            background-color: #f0f2ff;
+        }
+
+        .level-2 {
+            color: #495057;
+            padding-left: 30px;
+        }
+
+        .level-3 {
+            padding-left: 60px;
+            color: #6c757d;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #667eea;
+            padding: 5px;
+            margin-right: 5px;
+            transition: transform 0.3s;
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(90deg);
+        }
+
+        .materials-cell, .standard-cell {
+            max-width: 250px;
+            position: relative;
+        }
+
+        .materials-cell:hover, .standard-cell:hover {
+            background-color: #f8f9ff;
+            cursor: pointer;
+        }
+
+        .materials-content, .standard-content {
+            white-space: pre-wrap;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .controls-left {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .controls-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+            
+            .level-2 {
+                padding-left: 15px;
+            }
+            
+            .level-3 {
+                padding-left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">55</div>
+                <div class="stat-label">总观测点数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">一级指标</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">26</div>
+                <div class="stat-label">二级指标</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="hasMaterials">55</div>
+                <div class="stat-label">已设置自评材料</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="controls-left">
+                <div class="control-group">
+                    <label>搜索指标：</label>
+                    <input type="text" id="searchInput" placeholder="输入关键词搜索...">
+                </div>
+                <div class="control-group">
+                    <label>筛选一级指标：</label>
+                    <select id="level1Filter">
+                        <option value="">全部显示</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>筛选二级指标：</label>
+                    <select id="level2Filter">
+                        <option value="">全部显示</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline; margin-left: 10px;" onclick="resetFilters()">重置</button>
+                </div>
+            </div>
+            <div class="controls-right">
+                <button class="btn btn-outline" onclick="exportData()">导出数据</button>
+                <button class="btn btn-primary" onclick="openScoringRules()">评分规则</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="evaluationTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">序号</th>
+                            <th style="width: 200px;">一级指标</th>
+                            <th style="width: 200px;">二级指标</th>
+                            <th style="width: 300px;">三级观测点</th>
+                            <th style="width: 100px;">权重</th>
+                            <th style="width: 280px;">自评材料</th>
+                            <th style="width: 350px;">评估标准</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评分规则配置模态框 -->
+    <div id="scoringRulesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>评分规则配置</h2>
+            <form id="scoringRulesForm" onsubmit="event.preventDefault(); saveScoringRules();">
+                <div class="form-group">
+                    <label for="scoringType">打分类型：</label>
+                    <select id="scoringType" onchange="toggleScoringOptions()">
+                        <option value="direct">直接打分</option>
+                        <option value="grade">打等级 (ABCD)</option>
+                    </select>
+                </div>
+                
+                <div id="gradeConversionSection" style="display: none;">
+                    <div class="form-group">
+                        <label>等级得分转换：</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <div>
+                                <label>A等级：</label>
+                                <input type="number" id="gradeA" min="0" max="100" step="0.1" value="90">
+                            </div>
+                            <div>
+                                <label>B等级：</label>
+                                <input type="number" id="gradeB" min="0" max="100" step="0.1" value="80">
+                            </div>
+                            <div>
+                                <label>C等级：</label>
+                                <input type="number" id="gradeC" min="0" max="100" step="0.1" value="60">
+                            </div>
+                            <div>
+                                <label>D等级：</label>
+                                <input type="number" id="gradeD" min="0" max="100" step="0.1" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>结论段位配置：</label>
+                    <div id="conclusionSections">
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="优秀" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="90" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="100" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="良好" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="80" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="89" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="一般" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="60" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="79" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                        <div class="conclusion-section" style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" placeholder="段位名称" value="不合格" style="width: 100px;">
+                                <input type="number" placeholder="最低分" value="0" style="width: 80px;">
+                                <span>-</span>
+                                <input type="number" placeholder="最高分" value="59" style="width: 80px;">
+                                <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addConclusionSection()" style="margin-top: 10px;">添加段位</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="整改流程段位">需要进行整改的段位：</label>
+                    <select id="rectificationGrade">
+                        <option value="不合格">不合格</option>
+                        <option value="一般">一般</option>
+                        <option value="良好">良好</option>
+                        <option value="优秀">优秀</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeScoringRulesModal()" style="margin-right: 10px;">取消</button>
+                    <button type="submit" class="btn btn-primary">保存配置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 专业评估指标数据
+        const evaluationData = [
+            {
+                "level1": "1.培养目标",
+                "level2": "1.1目标定位",
+                "level3": "1.1.1 培养目标定位符合学校办学宗旨，满足社会需求，服务国家和区域发展战略，体现专创融合。",
+                "weight": 2,
+                "materials": "学校发展规划、专业建设发展规划、最新版人才培养方案、培养目标论证材料",
+                "standard": "培养目标满足社会对本专业的职业需求（0.5）；培养目标服务于国家和区域发展战略（0.5）；培养目标与学校办学宗旨相匹配（0.5）；培养目标体现专创融合（0.5）。"
+            },
+            {
+                "level1": "1.培养目标",
+                "level2": "1.2目标内涵",
+                "level3": "1.2.1 培养目标表述明确具体、可衡量、可达成，体现德智体美劳全面发展，反映学生毕业后5年左右在社会和专业领域的发展预期。",
+                "weight": 2,
+                "materials": "学校发展规划、专业建设发展规划、最新版人才培养方案、培养目标论证材料",
+                "standard": "培养目标表述明确具体，可衡量、可达成（0.8）；培养目标体现德智体美劳全面发展内涵，并有课程模块支撑（0.6）；培养目标适岗性强，能反映学生毕业5年后左右在社会和专业领域的发展预期（0.6）。"
+            },
+            {
+                "level1": "1.培养目标",
+                "level2": "1.3目标评价",
+                "level3": "1.3.1有定期开展培养目标合理性评价的机制，并能根据评价结果对培养目标、培养方案进行必要修订。评价和修订过程应有教师、学生、毕业生、用人单位、教育行政管理部门等利益相关方参与。",
+                "weight": 2,
+                "materials": "专业培养方案评价制度、利益相关方参与评价材料、培养方案修订材料",
+                "standard": "定期开展培养目标合理性评价，形成了有效运行的机制（0.8）；评价结果运用及时，能根据评价结果对培养目标、培养方案进行必要修订（0.6）；目标评价过程体现多主体参与，评价和修订过程涵盖教师、学生、毕业生、用人单位、教育行政管理部门、企业行业等利益相关方（0.6）。"
+            },
+            {
+                "level1": "2.毕业要求",
+                "level2": "2.1品德修养",
+                "level3": "2.1.1具有人文底蕴、科学精神、职业素养、社会责任感和积极的人生态度，了解国情社情民情，践行社会主义核心价值观。",
+                "weight": 2,
+                "materials": "最新版人才培养方案、毕业要求落实举措、毕业要求支撑材料、毕业要求达成评价机制",
+                "standard": "毕业要求有效支撑培养目标（0.6）；毕业要求能够在人才培养全过程中分解落实，形成可教、可学、可评的指标点（0.8）；有毕业要求落实、达成评价机制（0.6）。"
+            },
+            {
+                "level1": "2.毕业要求",
+                "level2": "2.2学科知识",
+                "level3": "2.2.1具有扎实的基础知识和专业知识，掌握本专业基本的研究方法，了解本专业及相关领域最新动态和发展趋势。",
+                "weight": 2,
+                "materials": "毕业要求达成评价机制最新版人才培养方案、毕业要求落实举措、毕业要求支撑材料、毕业要求达成评价机制",
+                "standard": "毕业要求有效支撑培养目标（0.6）；毕业要求能够在人才培养全过程中分解落实，形成可教、可学、可评的指标点（0.8）；有毕业要求落实、达成评价机制（0.6）。"
+            },
+            {
+                "level1": "2.毕业要求",
+                "level2": "2.3能力发展",
+                "level3": "2.3.1具有批判性思辩和创新能力，解决复杂问题的能力，信息技术应用能力，较强的沟通表达能力，良好的团队合作能力以及国际视野。",
+                "weight": 2,
+                "materials": "最新版人才培养方案、毕业要求落实举措、毕业要求支撑材料、毕业要求达成评价机制",
+                "standard": "毕业要求有效支撑培养目标（0.6）；毕业要求能够在人才培养全过程中分解落实，形成可教、可学、可评的指标点（0.8）；有毕业要求落实、达成评价机制（0.6）。"
+            },
+            {
+                "level1": "2.毕业要求",
+                "level2": "2.4学习发展",
+                "level3": "2.4.1具有终身学习意识和自我管理、自主学习能力，能够通过不断学习，适应社会和个人可持续发展。",
+                "weight": 2,
+                "materials": "最新版人才培养方案、毕业要求落实举措、毕业要求支撑材料、毕业要求达成评价机制",
+                "standard": "毕业要求有效支撑培养目标（0.6）；毕业要求能够在人才培养全过程中分解落实，形成可教、可学、可评的指标点（0.8）；有毕业要求落实、达成评价机制（0.6）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.1课程体系",
+                "level3": "3.1.1课程设置及学时学分结构比例合理，符合本科专业类教学质量国家标准、专业认证标准及课程标准规定的要求。",
+                "weight": 2,
+                "materials": "最新版人才培养方案",
+                "standard": "能够按照各专业认证标准和本科专业类教学质量标准要求开设课程，课程结构合理（1）；学时学分符合国家规定要求（1）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.1课程体系",
+                "level3": "3.1.2 设置夯实学科理论基础和专业知识，融入专业最新前沿进展，适应新科技革命、新经济发展，对应\"四新\"建设，体现多学科交叉和跨学科融合、专创融合的课程。",
+                "weight": 2,
+                "materials": "课程开课计划、课程教学大纲、教学设计（教案）",
+                "standard": "设置夯实学科理论基础和专业知识的课程（0.4）；融入专业最新前沿进展与成果的课程（0.4）；设置适应新科技革命、新经济发展，对应\"四新\"建设的课程（0.4）；设置体现多学科交叉和跨学科融合的课程（0.4）；设置体现专创融合的课程（0.4）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.1课程体系",
+                "level3": "3.1.3课程体系支撑毕业要求的达成。",
+                "weight": 2,
+                "materials": "最新版人才培养方案、课程体系评价制度材料、课程体系与毕业要求关联度矩阵",
+                "standard": "设置合理的课程模块（课程模块划分可依据《普通高等学校本科专业类教学质量国家标准》），对毕业要求形成有效支撑（0.7）；形成了课程体系合理性评价机制，运行通畅并有效果（0.7）；课程体系评价和修订体现多主体参与，涵盖教师、家长、学生、毕业生、用人单位等利益相关方（0.6）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.2课程建设",
+                "level3": "3.2.1课程教学大纲的完备、科学、规范。",
+                "weight": 2,
+                "materials": "课程大纲、专业核心课程教学设计、近三年课程考核材料（命题计划、质量分析、评价报告）",
+                "standard": "专业课程教学大纲完备，包括课程目标、教学内容、教学方法、考核内容、考核方式、评分标准等内容板块（0.7）；依据毕业要求制定课程目标和课程教学大纲，教学内容、教学方法、考核内容、考核方式等支撑课程目标和毕业要求的实现（0.7）；课程教学大纲体例规范，教学设计理念先进，教学内容准确、科学（0.6）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.2课程建设",
+                "level3": "3.2.2 课程思政建设有成效。",
+                "weight": 3,
+                "materials": "课程思政建设文件（制度、活动方案、评选通知）、育人成效、2-3门课程思政示范课教学设计和案例",
+                "standard": "课程思政建设开展情况（1）；建成国家级、自治区级、校级课程思政示范课程、课程思政教学研究示范中心、课程思政示范课程教学团队等课程思政示范项目数（2）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.2课程建设",
+                "level3": "3.2.3 教材选用审核机制健全，管理规范。",
+                "weight": 2,
+                "materials": "教材选用审核管理制度、教材选用过程文件",
+                "standard": "教材选用、管理制度完备（0.6）；近三学年\"马工程\"重点教材选用使用率100%（0.6）。专业课教材选用科学严格，规范合理，选优选新率达到一定比例（0.8）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.2课程建设",
+                "level3": "3.2.4 推进信息技术与教学过程的融合，加强线上课程教学资源建设。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "每学年教师通过自建或引进网络课程资源，应用于本专业课程教学占本专业年度开课（不含公共课数）的比例。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.2课程建设",
+                "level3": "3.2.5本专业自治区级及以上一流课程建设情况。",
+                "weight": 3,
+                "materials": "无",
+                "standard": "近10年获得的自治区级及以上一流本科课程、精品课程、精品视频公开课、精品资源共享课等。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.3实践教学",
+                "level3": "3.3.1实践教学体系完整，实践教学环节学时学分设置符合国家标准。",
+                "weight": 2,
+                "materials": "实践课程教学大纲、10个综合性设计性实验设计方案、学生实验报告",
+                "standard": "实践教学学分占总学分（学时）比例（人文社科类专业≥15%，理工农医类专业≥25%）（1）。实验开出率100%（0.5）。综合性和设计性实验比例达到一定比例，质量好（0.5）。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.3实践教学",
+                "level3": "3.3.2毕业设计（论文）选题的合理性及质量。",
+                "weight": 2,
+                "materials": "最近一届毕业论文选题目录、10篇优秀毕业论文",
+                "standard": "师范专业毕业论文（设计）来自基础教育一线需要；非师范类专业以实验、实习、工程实践和社会调查等实践性工作为基础的毕业论文（设计）比例≥50%。毕业论文抽检合格率为100%。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.3实践教学",
+                "level3": "3.3.3毕业设计（论文）指导教师配备。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "导师人均指导学生毕业论文（设计）数量。导师中副高及以上职称的占比，以及博士学位教师的占比。有一定比例的校外、企业行业兼职教师参与毕业论文(设计）指导。"
+            },
+            {
+                "level1": "3.课程教学与合作实践",
+                "level2": "3.4协同育人",
+                "level3": "3.4.1开拓和有效利用社会资源，合作办学、合作育人、合作就业、合作发展，共建共享资源有成效。",
+                "weight": 2,
+                "materials": "合作单位清单、合作协议、联合办学方案、产学合作项目数、协同育人成效材料",
+                "standard": "积极开展校企、校地、校所、校校合作办学、合作育人、合作就业、合作发展措施具体、可行（1）；建有校企联合实验室等人才培养平台；行业企业对专业办学或人才培养提供包含经费、设备、人员等各类资源支持（1）。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.1师德师风",
+                "level3": "4.1.1落实师德考核",
+                "weight": 1,
+                "materials": "师德考核制度材料、师德考核过程材料",
+                "standard": "师德考核制度健全，运行机制合理、可持续（0.5）；师德考核重视过程与结果考核相结合，并能得到有效落实（0.5）。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.2数量结构",
+                "level3": "4.2.1专业生师比满足本科专业类教学质量国家标准",
+                "weight": 3,
+                "materials": "无",
+                "standard": "生师比=普通本科生数/专业教师总数。其中：普通本科生数包括专升本学生数在内。专业教师总数=专业专任教师数+外聘教师数×0.5。本专业专任教师指学校本专业在职教职工中具有教师资格，专门从事专业课程教学工作的人员。外聘教师指聘请的国内、外其他高校及科研机构、企业、行业等的教师和退休教师（含本校退休教师），聘期为一学期（6个月）以上。当聘请校外教师数超过专任教师总数的四分之一时，只按专任教师总数的四分之一计算。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.2数量结构",
+                "level3": "4.2.2本专业专任教师中具有高级职称教师占比和具有硕士及以上学位的教师的占比。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "本专业专任教师中具有高级职称教师占比符合国家标准要求（0.5）；具有硕士及以上学位的教师的占比符合国家标准要求（0.5）。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.2数量结构",
+                "level3": "4.2.3近三学年本专业专任教师中教授为本科生授课比例100%。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "包括理论课、术科课、实验课等课程的授课教授，不包括军训、见习、实习、毕业设计、毕业论文、社会调查等教学任务。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.2数量结构",
+                "level3": "4.2.4具有行业企业从业背景教师符合专业要求。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "本专业教师在近五年中有一学期及以上（可累计）在企业、机构一线从事与本专业相关的实际工作，能够全面指导学生专业实践、实训活动的教师。包含专兼职教师，其中，兼职教师数以实际上课教师数量统计。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.2数量结构",
+                "level3": "4.2.5专业核心课程教师专业背景对口比例100%。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "专业背景对口是指核心课程授课教师具有授课专业相近的学习或者工作经历（学习或工作经历需连续一年以上）。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.3教师水平",
+                "level3": "4.3.1近三年本专业教师主持省部级及以上教育教学研究与改革项目情况。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "自治区级及以上教育教学研究与改革项目包括教育部、自治区级教育行政部门的教改立项、教育科学规划课题等。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.3教师水平",
+                "level3": "4.3.2近三年（届）本专业教师获得自治区级及以上教学成果奖、教材建设奖、教学竞赛奖情况。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "教学成果包括两类。一类是该专业直接相关的教学成果；一类是综合性的教学成果。该专业专任教师在教学成果中排名前5。教师教学竞赛指在中国高等教学学会认可，在全国具有较大公信力的教师教学竞赛项目。（各教指委可参考附表《全国高校教师教学竞赛项目（2012-2020年）》明确列为专业类综合评估中有关教师获得教学竞赛奖的项目范围。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.3教师水平",
+                "level3": "4.3.3近三年参与指导本专业学生学科竞赛、大学生创新创业训练计划项目等活动的教师占本专业教师总数的比例。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "学科竞赛、大学生创新创业训练计划项目等活动包括自治区级、国家级。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.3教师水平",
+                "level3": "4.3.4近三年教师主持科研项目及获得科研奖励。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "近三年主持科研项目的教师在专任教师中的占比。以第一立项单位主持的国家级项目（科技部项目、国家重大科技专项、国家自然基金项目、国家社科基金项目、国家艺术基金）、国防/军队重要科研项目、境外合作科研项目、教育部人文社会科学研究项目、部委级项目、自治区级项目（自治区教育厅科研立项、自治区科技厅立项、自治区自然科学基金、自治区哲学/社科基金）等科研奖励包括国家最高科学技术奖、自然科学奖、技术发明奖、国际科学技术合作奖、国家级人文社科奖、教育部高校科研成果奖（科学技术、人文社科），自治区政府自然科学奖、技术发明奖、科技进步奖、哲学社科奖等。该专业专任教师在国家级和自治区级奖项中排名前5。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.3教师水平",
+                "level3": "4.3.5 教师课堂教学质量",
+                "weight": 1,
+                "materials": "专家远程听课评价记录",
+                "standard": "专家根据专业提供课表，任选1-2门课程，进行远程听课。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.4教师发展",
+                "level3": "4.4.1 专业所在学院基层教学组织机构健全，有提升专业教师教书育人能力和水平的措施。",
+                "weight": 2,
+                "materials": "基层教学组织工作制度、近三年教研教改活动文件、教师能力提升措施材料、教学团队建设制度材料",
+                "standard": "专业所在学院基层教学组织机构健全，有规范、完备的工作制度建设（0.5）；基层教学组织能定期开展公开课、示范课等教研教改活动，效果明显（0.5）；有教学团队建设的制度和举措（0.5）；有提升专业教师教书育人能力和水平的措施，实施成效显著（0.5）。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.4教师发展",
+                "level3": "4.4.2近三年教师参加校内外教师教学发展机构组织的教学改革及能力提升专题培训。",
+                "weight": 1,
+                "materials": "近三年教师培训目录清单",
+                "standard": "近三年本专业专任教师参加校内外教师教学发展机构组织的教学改革及能力提升专题培训时长。参培教师人数占专业专任教师总数的比例100%。"
+            },
+            {
+                "level1": "4.师资队伍",
+                "level2": "4.4教师发展",
+                "level3": "4.4.3定期开展教师教学质量综合评价的情况。",
+                "weight": 1,
+                "materials": "教师教学质量评价制度文件、评价措施方法、评价结果运用材料",
+                "standard": "教师教学质量综合评价机制健全，形成有效的制度建设（0.4）；定期开展以学生学习成果为导向的教师教学质量综合评价，措施和方法得当（0.4）；评价结果与所在学院绩效分配和教师奖惩挂钩，评价结果运用科学（0.2）。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.1教学经费",
+                "level3": "5.1.1最近一年教学日常运行经费能满足专业教学要求，不低于平均水平。最近三年专业建设经费充裕，通过争取校级、自治区级和国家级一流本科专业、特色专业等立项获得资助经费，以及学校统筹上级拨款用于专业的建设经费。",
+                "weight": 2,
+                "materials": "专业经费使用明细账单",
+                "standard": "教学日常运行经费是开展本科专业教学活动及其辅助活动发生的支出经费。专业建设经费是指有校级、自治区级和国家级一流本科专业、特色专业等项目经费且学校统筹上级拨款用于专业的建设经费。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.2教学设施",
+                "level3": "5.2.1实验室生均面积、生均教学仪器设备值符合相关专业的国家标准，满足专业教学需求。",
+                "weight": 2,
+                "materials": "无",
+                "standard": "教学仪器设备是指使用学校预算经费、科研经费、基建经费、校内部门自筹经费购买或接受捐赠的耐用时间在一年以上，单价1000元以上的教学仪器设备，均应纳入仪器设备管理范围（不含已报废设备）。用于该专业教学的实验室、教学仪器设备均可计算在内。在校生数为包括专升本学生在内的普通本科生数，与4.2.1统计口径一致。实验室包括基础实验室、专业实验室、实习场所、实训场所、其他。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.2教学设施",
+                "level3": "5.2.2生均专业纸质图书资料册数符合标准要求，电子图书资料源满足师生需要，且近3年生均年进书量达到《普通高等学校基本办学条件指标（试行）》要求。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "本专业的图书资料（含学校与学院）是指供本专业教学、科研使用的图书资料；本专业的电子图书资料源（含学校和学院）是指供本专业教学科研使用的、由资源提供方完成更新的、可全文下载的电子资源，不包括随书的资料光盘。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.3教学资源",
+                "level3": "5.3.1 建有适应\"互联网+\"课程教学需要的智慧教室、智能实验室的建设。",
+                "weight": 2,
+                "materials": "智慧教室使用记录、智慧实验室使用记录",
+                "standard": "学校建设的可提供专业共享的智慧教室、智慧实验室的数量，以及专业使用情况。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.3教学资源",
+                "level3": "5.3.2.建有服务专业课程教学的资源库、案例库（行业企业、中小学教学案例库）。",
+                "weight": 2,
+                "materials": "资源库案例库管理使用材料",
+                "standard": "资源库、案例库（行业企业、中小学教学案例库）满足专业课程教学需求，向学生自主学习开放。推动科研成果、产学研合作项目转化为教学资源。"
+            },
+            {
+                "level1": "5.支持条件",
+                "level2": "5.3教学资源",
+                "level3": "5.3.3校外教育实践基地数符合相关专业的国家标准、认证标准或能满足专业教学和创新创业教育需求。",
+                "weight": 2,
+                "materials": "校外教育基地合作协议、校外基地建设方案、近三年产教融合项目一览表",
+                "standard": "学校与企业、行业单位共建校外教育实践基地，为学生实习、实训、创新创业训练等提供长期有效支持和保障。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.1质量体系",
+                "level3": "6.1.1建立校、院、专业三级教学质量保障体系。专业各教学环节质量标准完备。",
+                "weight": 1,
+                "materials": "教学质量保障体系工作文件、各教学环节质量标准",
+                "standard": "建立校、院、专业三级教学质量保障体系（0.4）；各教学环节质量标准完备（0.4）；质量保障标准科学、合理，评价策略多元化（0.2）。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.2监控评估",
+                "level3": "6.2.1对各教学环节质量实施全程监控与常态化评价。",
+                "weight": 1,
+                "materials": "教学质量标准落实工作文件、实施成效材料",
+                "standard": "对各教学环节质量实施全程监控，并有跟踪反馈措施（0.4）；对各教学环节质量开展常态化评价，评价结果得到有效运用（0.4）；质量监控与评价措施能有效落地，实施成效明显（0.2）。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.2监控评估",
+                "level3": "6.2.2近三学年专业教师课程教学学生评教情况。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "近三学年专业教师课程教学学生评教优秀率，学生对教师课堂教学满意情况。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.2监控评估",
+                "level3": "6.2.3专业自我评估及外部评价机制常态化。",
+                "weight": 1,
+                "materials": "近三年专业评估认证材料（制度、方案、结果）、第三方评估结果",
+                "standard": "定期开展专业自我评估，建立了有效的工作制度（0.5）；外部评价机制完善，第三方机构有效参与了专业评估（0.5）。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.3持续改进",
+                "level3": "6.3.1建立毕业生跟踪反馈机制。",
+                "weight": 1,
+                "materials": "毕业生就业追踪制度文件、近三届就业质量分析报告",
+                "standard": "建立毕业生跟踪反馈机制，与毕业生、用人单位形成良好互动（0.5）；开展就业质量分析，分析结果用于改进人才培养方案（0.5）。"
+            },
+            {
+                "level1": "6.质量保障",
+                "level2": "6.3持续改进",
+                "level3": "6.3.2有效使用校内外评价分析结果，推动人才培养质量的持续改进和提高。",
+                "weight": 2,
+                "materials": "教学质量监测反馈机制材料、改进效果材料、近三年专业教学质量报告",
+                "standard": "教学质量监测与评价信息反馈与结果运用机制有效（0.5）；使用校内外评价分析结果，推动人才培养质量的持续改进和提高（0.5）。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.1生源情况",
+                "level3": "7.1.1本专业近三年的第一志愿录取率。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "大类招生的专业按专业大类录取率统计。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.2指导服务",
+                "level3": "7.2.1学生指导与服务体系建设。",
+                "weight": 1,
+                "materials": "学生指导服务材料（思政教育、学业、职业规划、就业创业、心理健康）、学业导师制工作文件",
+                "standard": "常态化为专业学生提供思想政治教育、学业、职业生涯规划、就业创业、心理健康咨询等指导服务（0.4）；学业导师、新生导师等配备到位，指导内容、指导过程等形成制度监督（0.3）；学院领导班子和全体专业老师全员参与学生指导服务工作，落实全面、全程、全员育人制度建设（0.3）。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.2指导服务",
+                "level3": "7.2.2学生学业预警制度建设及实施。",
+                "weight": 1,
+                "materials": "学业预警制度文件、学业预警实施情况材料",
+                "standard": "建立了校、院、班级、学生等多级联动的学业监测机制，定期开展学业预警（0.5）；体现学业预警与指导帮扶结合（0.5）。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.3发展成效",
+                "level3": "7.3.1近三届毕业生初次就业率。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "初次就业率统计时间节点为每年的8月31日。初次就业率不低全区该专业所属学科平均就业率。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.3发展成效",
+                "level3": "7.3.2近三学年毕业生升学率。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "指近三年专业学生成功考取国内外大学研究生的情况。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.3发展成效",
+                "level3": "7.3.3近三年参与自治区级及以上大学生创新创业训练计划项目比例。",
+                "weight": 3,
+                "materials": "无",
+                "standard": "近三年参与自治区级及以上大学生创新创业训练计划项目学生人数占专业学生总数的比例。参与创业项目学生占专业学生总数的比例。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.3发展成效",
+                "level3": "7.3.4近三年参加自治区级及以上各类专业竞赛获奖。",
+                "weight": 3,
+                "materials": "无",
+                "standard": "指在中国高等教学学会认可，在全国具有较大公信力的大学生学科竞赛项目。（各教指委可参考附表《全国普通高校大学生竞赛排行榜内竞赛项目名单（2020年统计）》明确列为专业类综合评估中有关学生获得各类专业竞赛奖的项目范围。单人多次参加项目不重复计算，同一项目就高统计。"
+            },
+            {
+                "level1": "7.学生发展",
+                "level2": "7.3发展成效",
+                "level3": "7.3.5近三年用人单位反馈和第三方评价。",
+                "weight": 1,
+                "materials": "无",
+                "standard": "从近三届毕业生中随机抽取适当样本的毕业生，按照要求的方式统一开展用人单位评价。"
+            },
+            {
+                "level1": "8.优势特色",
+                "level2": "8.1专业优势",
+                "level3": "8.1.1获得自治区级及以上本科专业建设项目 。",
+                "weight": 4,
+                "materials": "无",
+                "standard": "近10年获得的自治区级及以上一流本科专业建设项目（包含特色专业、一流本科专业、特色专业及实验实训教学基地等）。"
+            },
+            {
+                "level1": "8.优势特色",
+                "level2": "8.2专业特色",
+                "level3": "8.2.1专业建设有举措和成效，具有独特性、示范性、引领性。",
+                "weight": 6,
+                "materials": "专业总结凝练文字材料",
+                "standard": "专业建设体现独特性（2）；专业建设体现示范性（2）；专业建设体现引领性（2）。"
+            }
+        ];
+
+        let filteredData = [...evaluationData];
+
+        // 初始化
+        function init() {
+            renderTable();
+            updateStats();
+            populateFilters();
+            bindEvents();
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            filteredData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.style.cursor = 'pointer';
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="level-1">${item.level1}</td>
+                    <td class="level-2">${item.level2}</td>
+                    <td class="level-3">${item.level3}</td>
+                    <td class="weight-cell">${item.weight || '0'}</td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${item.materials || '暂无自评材料要求'}</div>
+                    </td>
+                    <td class="standard-cell">
+                        <div class="standard-content">${item.standard || '暂无评估标准'}</div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // 填充筛选器
+        function populateFilters() {
+            const level1Filter = document.getElementById('level1Filter');
+            const level2Filter = document.getElementById('level2Filter');
+
+            // 获取唯一的一级指标
+            const level1Options = [...new Set(evaluationData.map(item => item.level1))];
+            level1Options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                level1Filter.appendChild(opt);
+            });
+
+            // 获取唯一的二级指标
+            const level2Options = [...new Set(evaluationData.map(item => item.level2))];
+            level2Options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                level2Filter.appendChild(opt);
+            });
+        }
+
+        // 筛选功能
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const level1Filter = document.getElementById('level1Filter').value;
+            const level2Filter = document.getElementById('level2Filter').value;
+
+            filteredData = evaluationData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.level1.toLowerCase().includes(searchTerm) ||
+                    item.level2.toLowerCase().includes(searchTerm) ||
+                    item.level3.toLowerCase().includes(searchTerm) ||
+                    (item.materials && item.materials.toLowerCase().includes(searchTerm)) ||
+                    (item.standard && item.standard.toLowerCase().includes(searchTerm));
+
+                const matchesLevel1 = !level1Filter || item.level1 === level1Filter;
+                const matchesLevel2 = !level2Filter || item.level2 === level2Filter;
+
+                return matchesSearch && matchesLevel1 && matchesLevel2;
+            });
+
+            renderTable();
+            updateStats();
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('level1Filter').value = '';
+            document.getElementById('level2Filter').value = '';
+            filterData();
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalCount').textContent = filteredData.length;
+            
+            const hasMaterialsCount = filteredData.filter(item => 
+                item.materials && item.materials.trim() !== ''
+            ).length;
+            document.getElementById('hasMaterials').textContent = hasMaterialsCount;
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('level1Filter').addEventListener('change', filterData);
+            document.getElementById('level2Filter').addEventListener('change', filterData);
+
+            // 模态框事件
+            const modal = document.getElementById('scoringRulesModal');
+            const span = modal.getElementsByClassName('close')[0];
+            
+            span.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            const dataStr = JSON.stringify(filteredData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = '专业评估指标体系数据.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 打开评分规则弹窗
+        function openScoringRules() {
+            const modal = document.getElementById('scoringRulesModal');
+            modal.style.display = 'block';
+            
+            // 绑定关闭按钮事件
+            const closeBtn = modal.querySelector('.close');
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // 关闭评分规则弹窗
+        function closeScoringRulesModal() {
+            document.getElementById('scoringRulesModal').style.display = 'none';
+        }
+
+        // 切换打分类型选项
+        function toggleScoringOptions() {
+            const scoringType = document.getElementById('scoringType').value;
+            const gradeSection = document.getElementById('gradeConversionSection');
+            
+            if (scoringType === 'grade') {
+                gradeSection.style.display = 'block';
+            } else {
+                gradeSection.style.display = 'none';
+            }
+        }
+
+        // 添加结论段位
+        function addConclusionSection() {
+            const container = document.getElementById('conclusionSections');
+            
+            const newSection = document.createElement('div');
+            newSection.className = 'conclusion-section';
+            newSection.style.marginBottom = '10px';
+            newSection.style.padding = '10px';
+            newSection.style.border = '1px solid #ddd';
+            newSection.style.borderRadius = '5px';
+            
+            newSection.innerHTML = `
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" placeholder="段位名称" style="width: 100px;">
+                    <input type="number" placeholder="最低分" style="width: 80px;">
+                    <span>-</span>
+                    <input type="number" placeholder="最高分" style="width: 80px;">
+                    <button type="button" class="btn btn-secondary" onclick="removeConclusionSection(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+                </div>
+            `;
+            
+            container.appendChild(newSection);
+        }
+
+        // 删除结论段位
+        function removeConclusionSection(button) {
+            const section = button.closest('.conclusion-section');
+            if (section) {
+                section.remove();
+            }
+        }
+
+        // 保存评分规则配置
+        function saveScoringRules() {
+            alert('评分规则配置已保存！');
+            closeScoringRulesModal();
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

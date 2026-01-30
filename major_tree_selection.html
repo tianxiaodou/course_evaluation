@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业评估 - 专家评估分配</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            flex: 1;
+            margin: 0;
+            padding: 0 15px;
+            display: flex;
+            gap: 15px;
+            overflow: hidden;
+        }
+        
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Firefox滚动条样式 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .right-panel {
+            width: 350px;
+            min-height: 600px;
+        }
+
+        .tree-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tree-root {
+            margin-bottom: 20px;
+        }
+
+        .tree-node {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .tree-node label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            user-select: none;
+        }
+
+        .tree-node label:hover {
+            background-color: #f0f2ff;
+        }
+
+        .tree-node input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .tree-node input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .tree-node details {
+            margin: 8px 0;
+        }
+
+        .tree-node summary {
+            list-style: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 移除默认的summary标记 */
+        .tree-node summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .tree-node summary::before {
+            content: '▶';
+            color: #667eea;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: transform 0.3s;
+            display: inline-block;
+            width: 14px;
+        }
+
+        .tree-node details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        /* 确保label和checkbox在同一行 */
+        .tree-node summary label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .tree-node summary input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .tree-children {
+            margin-left: 25px;
+            padding-left: 20px;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .tree-level-0 {
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .tree-level-1 {
+            font-weight: bold;
+            color: #495057;
+            margin-top: 15px;
+        }
+
+        .tree-level-2 {
+            color: #6c757d;
+        }
+
+        .tree-level-3 {
+            color: #868e96;
+            font-size: 14px;
+        }
+
+        .major-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: 10px;
+            font-style: italic;
+        }
+        
+        .allocation-status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .allocation-status.unallocated {
+            background-color: #dc3545;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .selected-info {
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .selected-info h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .selected-list {
+            list-style: none;
+            font-size: 14px;
+        }
+
+        .selected-list li {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="controls">
+                <div>
+                    <button class="btn btn-outline" onclick="expandAll()">展开全部</button>
+                    <button class="btn btn-outline" onclick="collapseAll()">折叠全部</button>
+                    <button class="btn btn-outline" onclick="toggleUnallocatedOnly()" id="filterBtn">仅展示未分配专业</button>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="clearSelection()">清空选择</button>
+                    <button class="btn btn-primary" onclick="confirmSelection()">确认分配</button>
+                </div>
+            </div>
+
+            <div class="tree-container">
+                <div class="tree-root">
+                    <details class="tree-node tree-level-0">
+                        <summary>
+                            <label>
+                                <input type="checkbox" id="rootCheckbox" onchange="toggleParent(this)">
+                                <span>2025专业评估任务</span>
+                            </label>
+                        </summary>
+                        <div class="tree-children" id="rootChildren">
+                            <!-- 工学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>工学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>计算机科学与技术</span>
+                                            <span class="major-info">（计算机学院 - 林静姝）</span>
+                                        </label>
+                                    </div>
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>软件工程</span>
+                                            <span class="major-info">（软件学院 - 林静姝）</span>
+                                        </label>
+                                    </div>
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>机械工程</span>
+                                            <span class="major-info">（机械工程学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>电子信息工程</span>
+                                            <span class="major-info">（信息与通信工程学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 经济学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>经济学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>金融学</span>
+                                            <span class="major-info">（经济学院 - 林静姝）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 医学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>医学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>临床医学</span>
+                                            <span class="major-info">（医学院 - 林静姝）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 文学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>文学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>汉语言文学</span>
+                                            <span class="major-info">（文学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>英语</span>
+                                            <span class="major-info">（外国语学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 法学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>法学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>法学</span>
+                                            <span class="major-info">（法学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 理学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>理学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>数学与应用数学</span>
+                                            <span class="major-info">（数学科学学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- 管理学 -->
+                            <details class="tree-node tree-level-1">
+                                <summary style="display: flex; align-items: center;">
+                                    <label>
+                                        <input type="checkbox" onchange="toggleParent(this)">
+                                        <span>管理学</span>
+                                    </label>
+                                </summary>
+                                <div class="tree-children">
+                                    <div class="tree-node tree-level-2">
+                                        <label>
+                                            <input type="checkbox" onchange="updateSelection(this)">
+                                            <span>会计学</span>
+                                            <span class="major-info">（商学院 - 陆天宇）</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="selected-info">
+                <h3>已选择的专业</h3>
+                <ul id="selectedMajors" class="selected-list">
+                    <li>暂无选择</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 展开全部
+        function expandAll() {
+            const detailsElements = document.querySelectorAll('details');
+            detailsElements.forEach(details => {
+                details.open = true;
+            });
+        }
+
+        // 页面加载完成后添加事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 页面加载完成后默认展开所有节点
+            setTimeout(() => {
+                expandAll();
+                
+                // 初始化分配标识
+                initAllocationStatus();
+                
+                // 默认选中指定专业
+                const defaultMajors = [
+                    '软件工程',
+                    '机械工程',
+                    '汉语言文学'
+                ];
+                
+                defaultMajors.forEach(majorName => {
+                    // 找到专业名称对应的span元素（排除major-info）
+                    const majorSpans = document.querySelectorAll('.tree-level-2 span:not(.major-info)');
+                    majorSpans.forEach(span => {
+                        if (span.textContent === majorName) {
+                            // 找到父级label元素
+                            const label = span.closest('label');
+                            if (label) {
+                                // 找到对应的复选框并选中
+                                const checkbox = label.querySelector('input[type="checkbox"]');
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // 更新已选择列表
+                updateSelection();
+            }, 100);
+        });
+
+        // 折叠全部
+        function collapseAll() {
+            const detailsElements = document.querySelectorAll('details');
+            detailsElements.forEach(details => {
+                details.open = false;
+            });
+        }
+
+        // 切换父节点并更新子节点
+        function toggleParent(checkbox) {
+            const isChecked = checkbox.checked;
+            const treeNode = checkbox.closest('.tree-node');
+            const children = treeNode.querySelectorAll('.tree-children input[type="checkbox"]');
+            
+            children.forEach(child => {
+                child.checked = isChecked;
+            });
+            
+            updateSelection();
+        }
+
+        // 更新选择信息
+        function updateSelection() {
+            const selectedCheckboxes = document.querySelectorAll('.tree-level-2 input[type="checkbox"]:checked');
+            const selectedList = document.getElementById('selectedMajors');
+            
+            if (selectedCheckboxes.length === 0) {
+                selectedList.innerHTML = '<li>暂无选择</li>';
+                return;
+            }
+            
+            let html = '';
+            selectedCheckboxes.forEach(checkbox => {
+                const label = checkbox.closest('label');
+                // 根据是否有分配标识确定专业名称的位置
+                const hasAllocationStatus = label.querySelector('.allocation-status');
+                const majorNameIndex = hasAllocationStatus ? 3 : 2;
+                const majorName = label.querySelector(`span:nth-child(${majorNameIndex})`).textContent;
+                const majorInfo = label.querySelector('.major-info') ? label.querySelector('.major-info').textContent : '';
+                html += `<li>${majorName} ${majorInfo}</li>`;
+            });
+            
+            selectedList.innerHTML = html;
+        }
+
+        // 清空选择
+        function clearSelection() {
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            const selectedList = document.getElementById('selectedMajors');
+            
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            selectedList.innerHTML = '<li>暂无选择</li>';
+        }
+
+        // 已分配专业列表（实际应用中可能从服务器获取）
+        let allocatedMajors = ['计算机科学与技术', '金融学', '临床医学'];
+        
+        // 初始化分配标识
+        function initAllocationStatus() {
+            const majorNodes = document.querySelectorAll('.tree-level-2');
+            
+            majorNodes.forEach(node => {
+                const label = node.querySelector('label');
+                const majorName = label.querySelector('span:nth-child(2)').textContent;
+                
+                // 检查专业是否未分配
+                if (!allocatedMajors.includes(majorName)) {
+                    // 创建并添加标识元素
+                    const statusDot = document.createElement('span');
+                    statusDot.className = 'allocation-status unallocated';
+                    statusDot.title = '未分配专家组';
+                    
+                    // 插入到专业名称前面
+                    const majorNameSpan = label.querySelector('span:nth-child(2)');
+                    label.insertBefore(statusDot, majorNameSpan);
+                }
+            });
+        }
+        
+        // 检查专业是否已分配
+        function isMajorAllocated(majorName) {
+            return allocatedMajors.includes(majorName);
+        }
+        
+        // 确认分配
+        function confirmSelection() {
+            const selectedCheckboxes = document.querySelectorAll('.tree-level-2 input[type="checkbox"]:checked');
+            
+            if (selectedCheckboxes.length === 0) {
+                alert('请至少选择一个专业进行评估分配！');
+                return;
+            }
+            
+            let selectedMajors = [];
+            let newAllocatedMajors = [];
+            
+            selectedCheckboxes.forEach(checkbox => {
+                const label = checkbox.closest('label');
+                const majorName = label.querySelector('span:nth-child(3)') ? label.querySelector('span:nth-child(3)').textContent : label.querySelector('span:nth-child(2)').textContent;
+                const majorInfo = label.querySelector('.major-info') ? label.querySelector('.major-info').textContent : '';
+                
+                selectedMajors.push(majorName + majorInfo);
+                
+                // 如果专业尚未分配，添加到新分配列表
+                if (!allocatedMajors.includes(majorName)) {
+                    newAllocatedMajors.push(majorName);
+                }
+            });
+            
+            // 更新已分配专业列表
+            allocatedMajors = [...new Set([...allocatedMajors, ...newAllocatedMajors])];
+            
+            // 为新分配的专业移除未分配标识
+            newAllocatedMajors.forEach(majorName => {
+                const majorNodes = document.querySelectorAll('.tree-level-2');
+                majorNodes.forEach(node => {
+                    const label = node.querySelector('label');
+                    const currentMajorName = label.querySelector('span:nth-child(3)') ? label.querySelector('span:nth-child(3)').textContent : label.querySelector('span:nth-child(2)').textContent;
+                    
+                    if (currentMajorName === majorName) {
+                        // 移除未分配标识
+                        const statusDot = label.querySelector('.allocation-status.unallocated');
+                        if (statusDot) {
+                            statusDot.remove();
+                        }
+                    }
+                });
+            });
+            
+            alert('已选择 ' + selectedMajors.length + ' 个专业进行分配：\n\n' + selectedMajors.join('\n'));
+        }
+        
+        // 筛选仅展示未分配专业
+        let isUnallocatedOnly = false;
+        
+        function toggleUnallocatedOnly() {
+            isUnallocatedOnly = !isUnallocatedOnly;
+            const filterBtn = document.getElementById('filterBtn');
+            const majorNodes = document.querySelectorAll('.tree-level-2');
+            
+            if (isUnallocatedOnly) {
+                // 仅显示未分配专业
+                filterBtn.textContent = '显示全部专业';
+                filterBtn.classList.add('active');
+                
+                majorNodes.forEach(node => {
+                    const label = node.querySelector('label');
+                    // 排除major-info和allocation-status类的span来获取专业名称
+                    const majorNameSpan = label.querySelector('span:not(.major-info):not(.allocation-status)');
+                    const majorName = majorNameSpan ? majorNameSpan.textContent : '';
+                    
+                    if (allocatedMajors.includes(majorName)) {
+                        node.style.display = 'none';
+                    } else {
+                        node.style.display = 'block';
+                        // 确保父节点是展开的
+                        const parentNode = node.closest('.tree-level-1');
+                        if (parentNode) {
+                            const parentDetails = parentNode.closest('details');
+                            if (parentDetails) {
+                                parentDetails.open = true;
+                            }
+                        }
+                    }
+                });
+            } else {
+                // 显示全部专业
+                filterBtn.textContent = '仅展示未分配专业';
+                filterBtn.classList.remove('active');
+                
+                majorNodes.forEach(node => {
+                    node.style.display = 'block';
+                });
+            }
+        }
+
+        // 页面加载时展开根节点
+        document.addEventListener('DOMContentLoaded', function() {
+            const rootChildren = document.getElementById('rootChildren');
+            rootChildren.classList.add('show');
+        });
+    </script>
+</body>
+</html>
