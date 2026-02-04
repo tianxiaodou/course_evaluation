@@ -253,6 +253,28 @@
             margin-top: 5px;
         }
 
+        /* 插入按钮样式 */
+        .insert-btn {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+
+        td:hover .insert-btn {
+            display: block;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -272,6 +294,8 @@
             width: 80%;
             max-width: 600px;
             position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .close {
@@ -297,6 +321,7 @@
         }
 
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 10px;
@@ -306,9 +331,62 @@
         }
 
         .form-group input:focus,
+        .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        /* 美化下拉框样式 */
+        input[list] {
+            border: 2px solid #c4d1f9;
+            border-radius: 6px;
+            padding: 10px 14px;
+            background-color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[list]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 美化材料项输入框 */
+        .materials-item input {
+            border: 2px solid #c4d1f9;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .materials-item input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 美化选择框样式 */
+        select {
+            border: 2px solid #c4d1f9;
+            border-radius: 6px;
+            padding: 10px 14px;
+            background-color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23666" viewBox="0 0 16 16"><path d="M8 11l-6-6h12l-6 6z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         @media (max-width: 768px) {
@@ -373,7 +451,7 @@
             </div>
             <div class="stat-item">
                 <div class="stat-number" id="hasMaterials">0</div>
-                <div class="stat-label">已设置自评材料</div>
+                <div class="stat-label">已设置自评支撑材料</div>
             </div>
         </div>
 
@@ -402,7 +480,7 @@
             <div class="controls-right">
                 <!-- <button class="btn btn-outline" onclick="importData()">导入数据</button> -->
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
-                <!-- <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button> -->
+                <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
                 <button class="btn btn-primary" onclick="openScoringRules()">评分规则</button>
             </div>
         </div>
@@ -417,9 +495,10 @@
                             <th style="width: 200px;">二级指标</th>
                             <th style="width: 300px;">三级观测点</th>
                             <th style="width: 100px;">权重</th>
-                            <th style="width: 280px;">自评材料</th>
+                            <th style="width: 280px;">自评支撑材料</th>
+                            <th style="width: 280px;">专家评估支撑材料</th>
                             <th style="width: 350px;">评估标准</th>
-                            <!-- <th style="width: 80px;">操作</th> -->
+                            <th style="width: 80px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -452,9 +531,26 @@
                     <label for="weightInput">观测点权重：</label>
                     <input type="number" id="weightInput" min="0" step="0.1" placeholder="请输入权重值...">
                 </div>
+                <!-- 自评支撑材料 -->
                 <div class="form-group">
-                    <label for="materialsInput">自评材料：</label>
-                    <textarea id="materialsInput" rows="4" placeholder="请输入需要提供的自评支撑材料..."></textarea>
+                    <label>自评支撑材料：</label>
+                    <div id="materialsList">
+                        <!-- 材料项将通过JavaScript动态添加 -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('materials')" style="margin-top: 10px;">
+                        + 添加材料
+                    </button>
+                </div>
+                
+                <!-- 专家评估支撑材料 -->
+                <div class="form-group">
+                    <label>专家评估支撑材料：</label>
+                    <div id="expertMaterialsList">
+                        <!-- 材料项将通过JavaScript动态添加 -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('expertMaterials')" style="margin-top: 10px;">
+                        + 添加材料
+                    </button>
                 </div>
                 <div class="form-group">
                     <label for="standardInput">评估标准：</label>
@@ -550,13 +646,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="整改流程段位">需要进行整改的段位：</label>
-                    <select id="rectificationGrade">
-                        <option value="不合格">不合格</option>
-                        <option value="一般">一般</option>
-                        <option value="良好">良好</option>
-                        <option value="优秀">优秀</option>
-                    </select>
+                    <label for="rectificationThreshold">需要进行整改的范围（＜=）：</label>
+                    <input type="number" id="rectificationThreshold" value="59" min="0" max="100" step="1" style="width: 120px;">
                 </div>
                 
                 <div style="text-align: center; margin-top: 20px;">
@@ -841,11 +932,16 @@
         let filteredData = [...evaluationData];
         let currentEditIndex = -1;
 
-        // 为现有数据添加权重假数据
+        // 为现有数据添加权重和专家评估支撑材料假数据
         function addWeightData() {
             evaluationData.forEach(item => {
                 // 为所有指标重新生成3-5之间的随机整数
                 item.weight = Math.floor(Math.random() * 3) + 3;
+                
+                // 添加专家评估支撑材料假数据
+                if (!item.expertMaterials) {
+                    item.expertMaterials = "1. 课堂教学录像\n2. 课程考核资料\n3. 学生作业样本\n4. 教学反思报告";
+                }
             });
         }
 
@@ -877,22 +973,28 @@
                 });
                 
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td style="position: relative;">
+                        <span class="serial-number">${index + 1}</span>
+                        <button class="insert-btn" onclick="insertBeforeIndicator(${index})" title="在上方插入一行">↑</button>
+                    </td>
                     <td class="level-1">${item.level1}</td>
                     <td class="level-2">${item.level2}</td>
                     <td class="level-3">${item.level3}</td>
                     <td class="weight-cell">${item.weight || '0'}</td>
                     <td class="materials-cell">
-                        <div class="materials-content">${item.materials || '暂无自评材料要求'}</div>
+                        <div class="materials-content">${item.materials || '暂无自评支撑材料要求'}</div>
+                    </td>
+                    <td class="expert-materials-cell">
+                        <div class="expert-materials-content">${item.expertMaterials || '暂无专家评估支撑材料要求'}</div>
                     </td>
                     <td class="standard-cell">
                         <div class="standard-content">${item.standard || '暂无评估标准'}</div>
                     </td>
-                    <!-- <td>
+                    <td>
                         
                         <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editIndicator(${index})">编辑</button>
                         <button style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; text-decoration: underline;" onclick="deleteIndicator(${index})">删除</button>
-                    </td> -->
+                    </td>
                 `;
                 
                 tbody.appendChild(row);
@@ -904,7 +1006,7 @@
         // 字段编辑功能
         function editField(index, field) {
             const currentValue = filteredData[index][field] || '';
-            const newValue = prompt(`请编辑${field === 'materials' ? '自评材料' : '评估标准'}:`, currentValue);
+            const newValue = prompt(`请编辑${field === 'materials' ? '自评支撑材料' : '评估标准'}:`, currentValue);
             
             if (newValue !== null) {
                 filteredData[index][field] = newValue;
@@ -936,19 +1038,27 @@
             } else {
                 const expandedRow = document.createElement('tr');
                 expandedRow.className = 'expanded-row';
-                const fullMaterials = filteredData[index].materials || '暂无自评材料要求';
+                const fullMaterials = filteredData[index].materials || '暂无自评支撑材料要求';
+                const fullExpertMaterials = filteredData[index].expertMaterials || '暂无专家评估支撑材料要求';
                 const fullStandard = filteredData[index].standard || '暂无评估标准';
 
                 expandedRow.innerHTML = `
-                    <td colspan="7" style="background: #f8f9ff; padding: 20px;">
+                    <td colspan="9" style="background: #f8f9ff; padding: 20px;">
                         <h4 style="margin-bottom: 10px; color: #667eea;">详细信息</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <h5 style="color: #495057; margin: 0;">自评材料要求：</h5>
+                                    <h5 style="color: #495057; margin: 0;">自评支撑材料要求：</h5>
                                     <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editField(${index}, 'materials')">编辑</button>
                                 </div>
                                 <div style="white-space: pre-line; color: #6c757d; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">${fullMaterials}</div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h5 style="color: #495057; margin: 0;">专家评估支撑材料要求：</h5>
+                                    <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editField(${index}, 'expertMaterials')">编辑</button>
+                                </div>
+                                <div style="white-space: pre-line; color: #6c757d; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">${fullExpertMaterials}</div>
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -1002,6 +1112,7 @@
                     item.level2.toLowerCase().includes(searchTerm) ||
                     item.level3.toLowerCase().includes(searchTerm) ||
                     (item.materials && item.materials.toLowerCase().includes(searchTerm)) ||
+                    (item.expertMaterials && item.expertMaterials.toLowerCase().includes(searchTerm)) ||
                     (item.standard && item.standard.toLowerCase().includes(searchTerm));
 
                 const matchesLevel1 = !level1Filter || item.level1 === level1Filter;
@@ -1064,7 +1175,28 @@
             currentEditIndex = -1;
             document.getElementById('modalTitle').textContent = '新增指标';
             document.getElementById('indicatorForm').reset();
+            // 清空材料项
+            document.getElementById('materialsList').innerHTML = '';
+            document.getElementById('expertMaterialsList').innerHTML = '';
             document.getElementById('indicatorModal').style.display = 'block';
+            // 滚动到顶部
+            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
+        }
+
+        // 在指定位置上方插入指标
+        function insertBeforeIndicator(index) {
+            currentEditIndex = -1;
+            document.getElementById('modalTitle').textContent = '在上方插入指标';
+            document.getElementById('indicatorForm').reset();
+            // 清空材料项
+            document.getElementById('materialsList').innerHTML = '';
+            document.getElementById('expertMaterialsList').innerHTML = '';
+            document.getElementById('indicatorModal').style.display = 'block';
+            // 滚动到顶部
+            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
+            
+            // 保存插入位置
+            window.insertPosition = index;
         }
 
         // 编辑指标
@@ -1077,26 +1209,254 @@
             document.getElementById('level2Input').value = item.level2;
             document.getElementById('level3Input').value = item.level3;
             document.getElementById('weightInput').value = item.weight || '';
-            document.getElementById('materialsInput').value = item.materials || '';
             document.getElementById('standardInput').value = item.standard || '';
             
+            // 清空现有材料项
+            document.getElementById('materialsList').innerHTML = '';
+            document.getElementById('expertMaterialsList').innerHTML = '';
+            
+            // 添加自评支撑材料项
+            if (item.materials) {
+                const materials = item.materials.split('\n');
+                materials.forEach(material => {
+                    if (material.trim()) {
+                        const listContainer = document.getElementById('materialsList');
+                        const itemCount = listContainer.children.length;
+                        const itemId = `materialsItem_${itemCount}`;
+                        
+                        // 模板选项
+                        const templateOptions = [
+                            { value: 'syllabus', text: '课程大纲模板' },
+                            { value: 'teaching_plan', text: '教学计划模板' },
+                            { value: 'assessment_method', text: '考核方式说明模板' },
+                            { value: 'teaching_reflection', text: '教学反思模板' }
+                        ];
+                        
+                        // 检查是否是模板
+                        const isTemplate = templateOptions.some(option => option.text === material);
+                        const templateRequiredValue = isTemplate ? 'true' : 'false';
+                        const statusText = isTemplate ? '需要模板' : '无需模板';
+                        const statusBg = isTemplate ? '#28a745' : '#e0e0e0';
+                        const statusColor = isTemplate ? 'white' : 'black';
+                        const materialInputDisplay = isTemplate ? 'none' : 'block';
+                        const templateSelectDisplay = isTemplate ? 'block' : 'none';
+                        
+                        // 找到模板对应的value
+                        let templateValue = '';
+                        if (isTemplate) {
+                            const template = templateOptions.find(option => option.text === material);
+                            templateValue = template ? template.value : '';
+                        }
+                        
+                        // 创建材料项HTML
+                        const itemHtml = `
+                            <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <div style="display: flex; align-items: center; margin-right: 10px;">
+                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                            <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
+                                <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
+                            </select>
+                        </div>
+                                <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay === 'block' ? 'flex' : 'none'};">
+                                    <input type="text" value="${!isTemplate ? material : ''}" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                </div>
+                                <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay === 'block' ? 'flex' : 'none'};">
+                                    <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        <option value="">请选择模板</option>
+                                        ${templateOptions.map(option => `<option value="${option.value}" ${option.value === templateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <button type="button" onclick="removeMaterialsItem('materials', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    删除
+                                </button>
+                            </div>
+                        `;
+                        
+                        // 添加到容器
+                        listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                        
+                        // 添加事件监听器
+                        const item = document.getElementById(itemId);
+                        const templateRequired = item.querySelector('.template-required');
+                        const templateSelectContainer = item.querySelector('.template-select-container');
+            
+                        
+                        templateRequired.addEventListener('change', function() {
+                            const requiresTemplate = this.value === 'true';
+                            
+                            // 显示或隐藏对应的输入控件
+                            if (requiresTemplate) {
+                                item.querySelector('.material-input-container').style.display = 'none';
+                                templateSelectContainer.style.display = 'flex';
+                            } else {
+                                item.querySelector('.material-input-container').style.display = 'flex';
+                                templateSelectContainer.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // 添加专家评估支撑材料项
+            if (item.expertMaterials) {
+                const expertMaterials = item.expertMaterials.split('\n');
+                expertMaterials.forEach(material => {
+                    if (material.trim()) {
+                        const listContainer = document.getElementById('expertMaterialsList');
+                        const itemCount = listContainer.children.length;
+                        const itemId = `expertMaterialsItem_${itemCount}`;
+                        
+                        // 模板选项
+                        const templateOptions = [
+                            { value: 'classroom_video', text: '课堂教学录像模板' },
+                            { value: 'assessment_data', text: '课程考核资料模板' },
+                            { value: 'student_homework', text: '学生作业样本模板' },
+                            { value: 'teaching_reflection', text: '教学反思报告模板' }
+                        ];
+                        
+                        // 检查是否是模板
+                        const isTemplate = templateOptions.some(option => option.text === material);
+                        const templateRequiredValue = isTemplate ? 'true' : 'false';
+                        const statusText = isTemplate ? '需要模板' : '无需模板';
+                        const statusBg = isTemplate ? '#28a745' : '#e0e0e0';
+                        const statusColor = isTemplate ? 'white' : 'black';
+                        const materialInputDisplay = isTemplate ? 'none' : 'block';
+                        const templateSelectDisplay = isTemplate ? 'block' : 'none';
+                        
+                        // 找到模板对应的value
+                        let templateValue = '';
+                        if (isTemplate) {
+                            const template = templateOptions.find(option => option.text === material);
+                            templateValue = template ? template.value : '';
+                        }
+                        
+                        // 创建材料项HTML
+                        const itemHtml = `
+                            <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <div style="display: flex; align-items: center; margin-right: 10px;">
+                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                                    <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                        <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
+                                        <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
+                                    </select>
+                                </div>
+                                <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay === 'block' ? 'flex' : 'none'};">
+                                    <input type="text" value="${!isTemplate ? material : ''}" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                </div>
+                                <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay === 'block' ? 'flex' : 'none'};">
+                                    <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        <option value="">请选择模板</option>
+                                        ${templateOptions.map(option => `<option value="${option.value}" ${option.value === templateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <button type="button" onclick="removeMaterialsItem('expertMaterials', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    删除
+                                </button>
+                            </div>
+                        `;
+                        
+                        // 添加到容器
+                        listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                        
+                        // 添加事件监听器
+                        const item = document.getElementById(itemId);
+                        const templateRequired = item.querySelector('.template-required');
+                        const templateSelectContainer = item.querySelector('.template-select-container');
+
+                        
+                        templateRequired.addEventListener('change', function() {
+                            const requiresTemplate = this.value === 'true';
+                            
+                            // 显示或隐藏对应的输入控件
+                            if (requiresTemplate) {
+                                item.querySelector('.material-input-container').style.display = 'none';
+                                templateSelectContainer.style.display = 'flex';
+                            } else {
+                                item.querySelector('.material-input-container').style.display = 'flex';
+                                templateSelectContainer.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            }
+            
             document.getElementById('indicatorModal').style.display = 'block';
+            // 滚动到顶部
+            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
         }
 
         // 保存指标
         function saveIndicator() {
+            // 处理自评支撑材料
+            const materialsItems = document.querySelectorAll('#materialsList .materials-item');
+            const materials = [];
+            materialsItems.forEach(item => {
+                const templateRequired = item.querySelector('.template-required').value === 'true';
+                let materialValue = '';
+                
+                if (templateRequired) {
+                    const templateSelect = item.querySelector('.template-select');
+                    const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+                    if (selectedOption && selectedOption.text) {
+                        materialValue = selectedOption.text;
+                    }
+                } else {
+                    const input = item.querySelector('.material-input-container input');
+                    materialValue = input.value.trim();
+                }
+                
+                if (materialValue) {
+                    materials.push(materialValue);
+                }
+            });
+            const materialsValue = materials.join('\n');
+
+            // 处理专家评估支撑材料
+            const expertMaterialsItems = document.querySelectorAll('#expertMaterialsList .materials-item');
+            const expertMaterials = [];
+            expertMaterialsItems.forEach(item => {
+                const templateRequired = item.querySelector('.template-required').value === 'true';
+                let materialValue = '';
+                
+                if (templateRequired) {
+                    const templateSelect = item.querySelector('.template-select');
+                    const selectedOption = templateSelect.options[templateSelect.selectedIndex];
+                    if (selectedOption && selectedOption.text) {
+                        materialValue = selectedOption.text;
+                    }
+                } else {
+                    const input = item.querySelector('.material-input-container input');
+                    materialValue = input.value.trim();
+                }
+                
+                if (materialValue) {
+                    expertMaterials.push(materialValue);
+                }
+            });
+            const expertMaterialsValue = expertMaterials.join('\n');
+
             const formData = {
                 level1: document.getElementById('level1Input').value,
                 level2: document.getElementById('level2Input').value,
                 level3: document.getElementById('level3Input').value,
                 weight: document.getElementById('weightInput').value || '0',
-                materials: document.getElementById('materialsInput').value,
+                materials: materialsValue,
+                expertMaterials: expertMaterialsValue,
                 standard: document.getElementById('standardInput').value
             };
 
             if (currentEditIndex === -1) {
-                // 新增
-                evaluationData.push(formData);
+                // 新增或插入
+                if (window.insertPosition !== undefined) {
+                    // 在指定位置插入
+                    evaluationData.splice(window.insertPosition, 0, formData);
+                    // 清除插入位置
+                    window.insertPosition = undefined;
+                } else {
+                    // 添加到末尾
+                    evaluationData.push(formData);
+                }
             } else {
                 // 编辑
                 const originalIndex = evaluationData.findIndex(item => 
@@ -1139,6 +1499,8 @@
         function openScoringRules() {
             const modal = document.getElementById('scoringRulesModal');
             modal.style.display = 'block';
+            // 滚动到顶部
+            modal.querySelector('.modal-content').scrollTop = 0;
             
             // 绑定关闭按钮事件
             const closeBtn = modal.querySelector('.close');
@@ -1168,6 +1530,107 @@
                 gradeSection.style.display = 'block';
             } else {
                 gradeSection.style.display = 'none';
+            }
+        }
+
+        // 动态添加支撑材料项
+        function addMaterialsItem(prefix) {
+            const listContainer = document.getElementById(`${prefix}List`);
+            const itemCount = listContainer.children.length;
+            const itemId = `${prefix}Item_${itemCount}`;
+            
+            // 文档模板选项
+            const templateOptions = {
+                materials: [
+                    { value: 'syllabus', text: '课程大纲模板' },
+                    { value: 'teaching_plan', text: '教学计划模板' },
+                    { value: 'assessment_method', text: '考核方式说明模板' },
+                    { value: 'teaching_reflection', text: '教学反思模板' }
+                ],
+                expertMaterials: [
+                    { value: 'classroom_video', text: '课堂教学录像模板' },
+                    { value: 'assessment_data', text: '课程考核资料模板' },
+                    { value: 'student_homework', text: '学生作业样本模板' },
+                    { value: 'teaching_reflection', text: '教学反思报告模板' }
+                ]
+            };
+            
+            // 创建材料项HTML
+            const itemHtml = `
+                <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-right: 10px;">
+                        <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                    </div>
+                    <div class="material-input-container" style="flex: 1; margin-right: 10px;">
+                        <input type="text" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                    </div>
+                    <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
+                        <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            <option value="">请选择模板</option>
+                            ${templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('')}
+                        </select>
+                    </div>
+                    <button type="button" onclick="removeMaterialsItem('${prefix}', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        删除
+                    </button>
+                </div>
+            `;
+            
+            // 添加到容器
+            listContainer.insertAdjacentHTML('beforeend', itemHtml);
+            
+            // 获取刚添加的材料项和输入框
+            const item = document.getElementById(itemId);
+            const templateRequired = item.querySelector('.template-required');
+            const materialInput = item.querySelector('.material-input-container input');
+            const templateSelect = item.querySelector('.template-select');
+            const templateSelectContainer = item.querySelector('.template-select-container');
+            
+            
+            // 添加模板选择事件监听器
+            templateRequired.addEventListener('change', function() {
+                const requiresTemplate = this.value === 'true';
+                
+                // 显示或隐藏对应的输入控件
+                if (requiresTemplate) {
+                    item.querySelector('.material-input-container').style.display = 'none';
+                    templateSelectContainer.style.display = 'flex';
+                } else {
+                    item.querySelector('.material-input-container').style.display = 'flex';
+                    templateSelectContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // 删除支撑材料项
+        function removeMaterialsItem(prefix, itemId) {
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.remove();
+            }
+        }
+
+        // 更新材料状态
+        function updateMaterialsStatus(input, statusBadge, templateOptions) {
+            const inputValue = input.value.trim();
+            
+            // 检查输入值是否在模板列表中
+            const isTemplate = templateOptions.some(option => option.text === inputValue);
+            
+            if (isTemplate) {
+                // 是模板，显示需要模板状态
+                statusBadge.textContent = '需要模板';
+                statusBadge.style.backgroundColor = '#28a745';
+                statusBadge.style.color = 'white';
+            } else {
+                // 不是模板，显示无需模板状态
+                statusBadge.textContent = '无需模板';
+                statusBadge.style.backgroundColor = '#e0e0e0';
+                statusBadge.style.color = 'black';
             }
         }
 
@@ -1224,13 +1687,13 @@
                 });
             });
             
-            const rectificationGrade = document.getElementById('rectificationGrade').value;
+            const rectificationThreshold = parseFloat(document.getElementById('rectificationThreshold').value) || 59;
             
             const scoringRules = {
                 scoringType,
                 gradeConversion,
                 conclusions: conclusionSections,
-                rectificationGrade
+                rectificationThreshold
             };
             
             // 保存到本地存储
