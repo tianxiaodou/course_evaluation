@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>办学条件监测</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <style>
+    .el-header {
+      background-color: #ffffff;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .el-main {
+      padding: 20px;
+    }
+    .success-cell {
+      color: #67c23a;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .danger-cell {
+      color: #67c23a;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .warning-cell {
+      color: #67c23a;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .indicator-name {
+      cursor: pointer;
+      color: #409eff;
+    }
+    .indicator-name:hover {
+      text-decoration: underline;
+    }
+    .drawer-content .indicator-name {
+      font-weight: 500;
+      color: #333;
+      cursor: default;
+      text-decoration: none;
+    }
+    .indicator-value {
+      font-weight: 500;
+      color: #333;
+      margin-right: 5px;
+    }
+    .el-table__header th {
+      background-color: #f8f8f9 !important;
+    }
+    .el-table__header .cell {
+      color: #515a6e !important;
+    }
+    .drawer-content {
+      padding: 20px;
+    }
+    .drawer-header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+    .drawer-header label {
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    .drawer-section {
+      margin-top: 30px;
+    }
+    .section-title {
+      color: #409eff;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+    .section-content {
+      margin-top: 10px;
+    }
+    .section-content h4 {
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .section-content p {
+      margin: 5px 0;
+      line-height: 1.5;
+    }
+    .section-content .el-table {
+      font-size: 14px;
+    }
+    .section-content .el-table th {
+      font-size: 14px;
+    }
+    .section-content .el-table td {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <el-container style="min-height: 100vh;">
+      <el-header height="60px">
+        <!-- <div style="font-size: 18px; font-weight: bold;">办学条件监测</div> -->
+        <div>
+          <el-button type="primary" @click="exportReport">导出</el-button>
+        </div>
+      </el-header>
+      <el-main>
+        <el-table 
+          :data="data" 
+          style="width: 100%"
+          border
+          :span-method="arraySpanMethod"
+        >
+          <el-table-column prop="一级指标" label="一级指标" width="120"></el-table-column>
+          <el-table-column prop="二级指标" label="二级指标" width="150"></el-table-column>
+          <el-table-column prop="监测点" label="监测点" min-width="250"></el-table-column>
+          <el-table-column label="本校指标值" width="120">
+            <template slot-scope="scope">
+              <span class="success-cell" @click="showDrawer(scope.row)">{{ scope.row['本校指标值'] }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="单位" label="单位" width="100"></el-table-column>
+          <el-table-column prop="监测点类型" label="监测点类型" width="120"></el-table-column>
+          <el-table-column prop="标准值" label="标准值" width="120"></el-table-column>
+        </el-table>
+      </el-main>
+    </el-container>
+
+    <el-dialog
+      title="指标明细"
+      :visible.sync="detailDialogVisible"
+      width="500px"
+    >
+      <el-form :model="selectedIndicator" label-width="100px">
+        <el-form-item label="指标名称">
+          {{ selectedIndicator['监测点'] }}
+        </el-form-item>
+        <el-form-item label="一级指标">
+          {{ selectedIndicator['一级指标'] }}
+        </el-form-item>
+        <el-form-item label="二级指标">
+          {{ selectedIndicator['二级指标'] }}
+        </el-form-item>
+        <el-form-item label="本校指标值">
+          {{ selectedIndicator['本校指标值'] }} {{ selectedIndicator['单位'] }}
+        </el-form-item>
+        <el-form-item label="标准值">
+          {{ selectedIndicator['标准值'] }}
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
+
+    <el-drawer
+      title="指标详情"
+      :visible.sync="drawerVisible"
+      direction="rtl"
+      size="50%"
+    >
+      <div class="drawer-content">
+        <div class="drawer-header">
+          <label>指标名称：</label>
+          <span class="indicator-name">{{ drawerIndicator['监测点'] }}</span>
+        </div>
+        
+        <div class="drawer-header">
+          <label>指标数值：</label>
+          <span class="indicator-value">{{ drawerIndicator['本校指标值'] }}</span>
+          <span style="margin: 0 10px;">{{ drawerIndicator['单位'] }}</span>
+        </div>
+        
+        <div class="drawer-section">
+          <h3 class="section-title">指标算法</h3>
+          <div class="section-content">
+            <h4>算法说明：</h4>
+            <p>校园占地面积 = 学校产权面积+非学校产权面积（独立使用）</p>
+            <!-- <p>注：数据来源于学校土地使用权证或相关证明文件</p> -->
+            
+            <h4>分项数据：</h4>
+            <el-table :data="subItemData" style="width: 100%" size="small" border>
+              <el-table-column prop="item" label="项目" width="180"></el-table-column>
+              <el-table-column prop="value" label="数值" width="120"></el-table-column>
+              <el-table-column prop="unit" label="单位" width="80"></el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
+  </div>
+
+  <script>
+    const mockData = [
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"1.校园占地面积","本校指标值":800,"单位":"亩","监测点类型":"基本监测点","标准值":"≥150"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"2.学校产权面积","本校指标值":400000,"单位":"平方米","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"3.非学校产权面积（独立使用）","本校指标值":50000,"单位":"平方米","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"4.非学校产权面积（共同使用）","本校指标值":30000,"单位":"平方米","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"5.生均占地面积","本校指标值":50,"单位":"平方米/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"6.生均产权占地面积","本校指标值":25,"单位":"平方米/生","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"1.校园占地","监测点":"7.生均体育场地设施面积","本校指标值":3.2,"单位":"平方米/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"校园建设","二级指标":"2.生均宿舍","监测点":"8.生均学生宿舍面积","本校指标值":6.5,"单位":"平方米/生","监测点类型":"基本监测点","标准值":"≥6.5"},
+      {"一级指标":"校园建设","二级指标":"3.生均教学行政用房","监测点":"9.生均教学行政用房面积","本校指标值":14,"单位":"平方米/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"4.图书资源","监测点":"10.图书资源总量","本校指标值":800000,"单位":"册","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"4.图书资源","监测点":"11.其中：纸质图书总册数","本校指标值":600000,"单位":"册","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"4.图书资源","监测点":"12.其中：数字资源量","本校指标值":200000,"单位":"册","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"4.图书资源","监测点":"13.生均图书","本校指标值":100,"单位":"册/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"4.图书资源","监测点":"14.生均年进书量","本校指标值":4,"单位":"册/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"5.信息化建设","监测点":"15.百名学生配教学用计算机台数","本校指标值":10,"单位":"台","监测点类型":"基本监测点","标准值":"≥8"},
+      {"一级指标":"教学条件","二级指标":"5.信息化建设","监测点":"16.校园网人均出口带宽","本校指标值":0.5,"单位":"Mbps","监测点类型":"基本监测点","标准值":"≥1"},
+      {"一级指标":"教学条件","二级指标":"5.信息化建设","监测点":"17.无线网络覆盖","本校指标值":"是","单位":"/","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"6.仪器设备","监测点":"18.生均教学科研仪器设备值","本校指标值":10000,"单位":"元/生","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"6.仪器设备","监测点":"19.当年新增教学科研仪器设备所占比例","本校指标值":10,"单位":"%","监测点类型":"基本监测点","标准值":"≥10"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"20.校内实训基地数量","本校指标值":50,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"21.其中：省级以上实训基地数","本校指标值":8,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"22.其中：虚拟仿真实训基地数","本校指标值":5,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"23.生均校内实训基地工位数","本校指标值":0.5,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"24.校外实训基地数量","本校指标值":200,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"教学条件","二级指标":"7.实训条件","监测点":"25.建立校外实训基地企业数","本校指标值":150,"单位":"个","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"8.专任教师配备","监测点":"26.专任教师数量","本校指标值":400,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"27.兼职教师数量","本校指标值":200,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"28.其中：校外教师数量","本校指标值":180,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"29.其中：行业导师数量","本校指标值":50,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"30.兼职教师占专兼职教师总数的比例","本校指标值":33.3,"单位":"%","监测点类型":"基本监测点","标准值":"≤30"},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"31.行业导师占专兼职教师总数的比例","本校指标值":8.3,"单位":"%","监测点类型":"基本监测点","标准值":"≥25（其中，民办学校："},
+      {"一级指标":"师资队伍","二级指标":"9.兼职教师配备","监测点":"32.行业导师承担专业课教学任务课时占学校专业课总课时比例","本校指标值":15,"单位":"%","监测点类型":"基本监测点","标准值":"≥15"},
+      {"一级指标":"师资队伍","二级指标":"10.外籍教师配备","监测点":"33.外籍教师数量","本校指标值":2,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"11.生师比","监测点":"34.生师比","本校指标值":18,"单位":"/","监测点类型":"基本监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"12.银龄计划","监测点":"35.银龄教师数量","本校指标值":5,"单位":"人","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"师资队伍","二级指标":"13.\"双师型\"教师配备","监测点":"36.\"双师型\"教师占专业课教师总数的比例","本校指标值":60,"单位":"%","监测点类型":"基本监测点","标准值":"≥50"},
+      {"一级指标":"师资队伍","二级指标":"14.专职辅导员配备","监测点":"37.专职辅导员与全日制学生数之比","本校指标值":0.1805555556,"单位":"/","监测点类型":"基本监测点","标准值":"≥1:200"},
+      {"一级指标":"师资队伍","二级指标":"15.专职思政课教师配备","监测点":"38.专职思政课教师与全日制学生数之比","本校指标值":0.2847222222,"单位":"/","监测点类型":"基本监测点","标准值":"≥1:350"},
+      {"一级指标":"师资队伍","二级指标":"16.专职心理健康教师配备","监测点":"39.专职心理健康教育教师与全日制学生数之比","本校指标值":2.8194444444,"单位":"/","监测点类型":"基本监测点","标准值":"≥1:4000，且至少配备"},
+      {"一级指标":"师资队伍","二级指标":"17.教师职业能力","监测点":"40.具有研究生学历及硕士学位教师占专任教师的比例","本校指标值":70,"单位":"%","监测点类型":"基本监测点","标准值":"≥15"},
+      {"一级指标":"师资队伍","二级指标":"17.教师职业能力","监测点":"41.具有高级专业技术职务教师占专任教师的比例","本校指标值":30,"单位":"%","监测点类型":"基本监测点","标准值":"≥20"},
+      {"一级指标":"师资队伍","二级指标":"17.教师职业能力","监测点":"42.专业课教师有相应的职业资格证书或职业技能等级证书比例","本校指标值":80,"单位":"/","监测点类型":"动态监测点","标准值":"/"},
+      {"一级指标":"师资队伍","二级指标":"18.企业经历","监测点":"43.满足每年至少累计","本校指标值":100,"单位":"%","监测点类型":"基本监测点","标准值":1},
+      {"一级指标":"经费保障","二级指标":"19.生均财政拨款水平","监测点":"44.年生均财政拨款水平","本校指标值":12000,"单位":"元/生/年","监测点类型":"基本监测点","标准值":"≥12000"},
+      {"一级指标":"经费保障","二级指标":"20.教学日常经费支出","监测点":"45.生均年教学日常运行支出","本校指标值":2800,"单位":"元/生/年","监测点类型":"基本监测点","标准值":"≥1200"},
+      {"一级指标":"经费保障","二级指标":"20.教学日常经费支出","监测点":"46.教学日常运行支出占比","本校指标值":13,"单位":"%","监测点类型":"基本监测点","标准值":"≥13"},
+      {"一级指标":"经费保障","二级指标":"20.教学日常经费支出","监测点":"47.公办学校在职人员经费支出占比","本校指标值":40,"单位":"%","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"经费保障","二级指标":"20.教学日常经费支出","监测点":"48.民办学校学费收入用于教学经费的比例","本校指标值":60,"单位":"%","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"经费保障","二级指标":"21.获得人社部门就业专项经费","监测点":"49.学校就业经费中获得人社部门就业专项经费占比","本校指标值":20,"单位":"%","监测点类型":"动态监测点","标准值":"见说明"},
+      {"一级指标":"经费保障","二级指标":"22.科研经费及社会培训收入","监测点":"50.师均科研经费及社会培训收入","本校指标值":50000,"单位":"元/人","监测点类型":"动态监测点","标准值":"见说明"}
+    ];
+
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          data: mockData,
+          detailDialogVisible: false,
+          selectedIndicator: {},
+          drawerVisible: false,
+          drawerIndicator: {},
+          subItemData: [
+            { item: '学校产权面积', value: 120000, unit: '㎡' },
+            { item: '非学校产权面积', value: 30000, unit: '㎡' }
+          ]
+        };
+      },
+      methods: {
+        showDrawer(row) {
+          this.drawerIndicator = row;
+          this.drawerVisible = true;
+        },
+        arraySpanMethod({ row, column, rowIndex, columnIndex }) {
+          // 一级指标合并
+          if (columnIndex === 0) {
+            let span = 1;
+            let startRow = rowIndex;
+            
+            // 向前查找相同值的行数
+            while (startRow > 0 && this.data[startRow - 1]['一级指标'] === row['一级指标']) {
+              startRow--;
+            }
+            
+            // 向后查找相同值的行数
+            while (rowIndex + span < this.data.length && this.data[rowIndex + span]['一级指标'] === row['一级指标']) {
+              span++;
+            }
+            
+            if (rowIndex === startRow) {
+              return {
+                rowspan: span,
+                colspan: 1
+              };
+            } else {
+              return {
+                rowspan: 0,
+                colspan: 0
+              };
+            }
+          }
+          
+          // 二级指标合并
+          if (columnIndex === 1) {
+            let span = 1;
+            let startRow = rowIndex;
+            
+            // 向前查找相同值的行数（在同一级指标下）
+            while (startRow > 0 && 
+                   this.data[startRow - 1]['一级指标'] === row['一级指标'] && 
+                   this.data[startRow - 1]['二级指标'] === row['二级指标']) {
+              startRow--;
+            }
+            
+            // 向后查找相同值的行数（在同一级指标下）
+            while (rowIndex + span < this.data.length && 
+                   this.data[rowIndex + span]['一级指标'] === row['一级指标'] && 
+                   this.data[rowIndex + span]['二级指标'] === row['二级指标']) {
+              span++;
+            }
+            
+            if (rowIndex === startRow) {
+              return {
+                rowspan: span,
+                colspan: 1
+              };
+            } else {
+              return {
+                rowspan: 0,
+                colspan: 0
+              };
+            }
+          }
+        },
+        getLevelClass(row) {
+          if (row['标准值'] && row['标准值'] !== '见说明' && row['标准值'] !== '/' && row['本校指标值'] !== '全覆盖' && row['本校指标值'] !== '不适用') {
+            const standardValue = parseFloat(row['标准值'].replace(/[^\d.]/g, ''));
+            const currentValue = parseFloat(row['本校指标值'].replace(/[^\d.]/g, ''));
+            
+            if (!isNaN(standardValue) && !isNaN(currentValue)) {
+              if (row['标准值'].includes('≥')) {
+                return currentValue >= standardValue ? 'success-cell' : 'danger-cell';
+              } else if (row['标准值'].includes('≤')) {
+                return currentValue <= standardValue ? 'success-cell' : 'danger-cell';
+              }
+            }
+          }
+          return 'success-cell';
+        },
+        showDetail(row) {
+          this.selectedIndicator = row;
+          this.detailDialogVisible = true;
+        },
+        exportReport() {
+          const dataStr = JSON.stringify(this.data, null, 2);
+          const dataBlob = new Blob([dataStr], {type: 'application/json'});
+          saveAs(dataBlob, '办学条件监测报告.json');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
