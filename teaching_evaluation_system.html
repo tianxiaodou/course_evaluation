@@ -227,6 +227,28 @@
             color: #333;
         }
 
+        /* 插入按钮样式 */
+        .insert-btn {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+
+        td:hover .insert-btn {
+            display: block;
+        }
+
         .stats {
             display: flex;
             justify-content: space-around;
@@ -389,6 +411,111 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        /* 树形结构样式 - 参考course_tree_selection.html */
+        .tree-node {
+            margin: 8px 0;
+        }
+
+        .tree-node details {
+            margin: 8px 0;
+        }
+
+        .tree-node summary {
+            list-style: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 移除默认的summary标记 */
+        .tree-node summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .tree-node summary::before {
+            content: '▶';
+            color: #667eea;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: transform 0.3s;
+            display: inline-block;
+            width: 14px;
+        }
+
+        .tree-node details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        /* 确保label和checkbox在同一行 */
+        .tree-node summary label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .tree-node summary input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .tree-node label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            user-select: none;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .tree-node label:hover {
+            background-color: #f0f2ff;
+        }
+
+        .tree-node input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        .tree-node span {
+            white-space: nowrap;
+            flex: 1;
+            text-align: left;
+        }
+
+        .tree-children {
+            margin-left: 25px;
+            padding-left: 20px;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .tree-level-0 {
+            font-weight: bold;
+            font-size: 16px;
+            color: #667eea;
+        }
+
+        .tree-level-1 {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .tree-level-2 {
+            color: #6c757d;
+        }
+
+        .tree-level-3 {
+            color: #868e96;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 0 10px;
@@ -454,10 +581,7 @@
                 <div class="stat-number">12</div>
                 <div class="stat-label">二级要素</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="hasMaterials">0</div>
-                <div class="stat-label">已设置支撑材料</div>
-            </div>
+
         </div>
 
         <div class="controls">
@@ -484,6 +608,7 @@
             </div>
             <div class="controls-right">
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
+                <button class="btn btn-outline" onclick="openSelfEvaluationSettings()">设置自评方式</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
             </div>
         </div>
@@ -497,7 +622,10 @@
                             <th style="width: 150px;">一级要素</th>
                             <th style="width: 150px;">二级要素</th>
                             <th style="width: 400px;">A 类要素内涵及观测点</th>
-                            <th style="width: 250px;">支撑材料</th>
+                            <th style="width: 100px;">是否有自评人</th>
+                            <th style="width: 200px;">自评人支撑材料</th>
+                            <th style="width: 200px;">自评汇总人支撑材料</th>
+                            <th style="width: 200px;">专家支撑材料</th>
                             <th style="width: 80px;">操作</th>
                         </tr>
                     </thead>
@@ -509,9 +637,40 @@
         </div>
     </div>
 
+    <!-- 设置自评方式模态框 -->
+    <div id="selfEvaluationSettingsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close">&times;</span>
+            <h2>设置自评方式</h2>
+            <form id="selfEvaluationSettingsForm">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <span>是否有自评人：</span>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="hasSelfEvaluator" value="true" checked> 是
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-weight: normal;">
+                            <input type="radio" name="hasSelfEvaluator" value="false"> 否
+                        </label>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>选择观测点：</label>
+                    <div id="indicatorTree" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 0; border-radius: 5px;">
+                        <!-- 树形结构将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeSelfEvaluationSettingsModal()" style="margin-right: 10px;">取消</button>
+                    <button type="submit" class="btn btn-primary">确定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 新增/编辑指标模态框 -->
     <div id="indicatorModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px;">
             <span class="close">&times;</span>
             <h2 id="modalTitle">新增指标</h2>
             <form id="indicatorForm">
@@ -527,14 +686,42 @@
                     <label for="level3Input">A 类要素内涵及观测点：</label>
                     <textarea id="level3Input" rows="3" required></textarea>
                 </div>
-                <!-- 支撑材料 -->
+                <!-- 是否有自评人 -->
                 <div class="form-group">
-                    <label>支撑材料：</label>
-                    <div id="materialsList">
+                    <label for="hasSelfEvaluatorSelect">是否有自评人：</label>
+                    <select id="hasSelfEvaluatorSelect" required>
+                        <option value="true">是</option>
+                        <option value="false">否</option>
+                    </select>
+                </div>
+                <!-- 自评人支撑材料（可选） -->
+                <div class="form-group" id="selfEvaluatorMaterialsSection">
+                    <label>自评人支撑材料：</label>
+                    <div id="selfEvaluatorMaterialsList">
                         <!-- 材料项将通过JavaScript动态添加 -->
                     </div>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('materials')" style="margin-top: 10px;">
-                        + 添加材料
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('selfEvaluatorMaterials')" style="margin-top: 10px;">
+                        + 添加自评人支撑材料
+                    </button>
+                </div>
+                <!-- 自评汇总人支撑材料（必选项） -->
+                <div class="form-group">
+                    <label>自评汇总人支撑材料：</label>
+                    <div id="summaryMaterialsList">
+                        <!-- 材料项将通过JavaScript动态添加 -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('summaryMaterials')" style="margin-top: 10px;">
+                        + 添加自评汇总人支撑材料
+                    </button>
+                </div>
+                <!-- 专家评估支撑材料 -->
+                <div class="form-group">
+                    <label>专家评估支撑材料：</label>
+                    <div id="expertMaterialsList">
+                        <!-- 材料项将通过JavaScript动态添加 -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('expertMaterials')" style="margin-top: 10px;">
+                        + 添加专家评估支撑材料
                     </button>
                 </div>
                 <div style="text-align: center; margin-top: 20px;">
@@ -764,14 +951,37 @@
 
             data.forEach((item, index) => {
                 const row = document.createElement('tr');
+                
+                // 构建各类支撑材料显示文本
+                const selfEvaluatorMaterialsText = item.selfEvaluatorMaterials && item.selfEvaluatorMaterials.length > 0 ? 
+                    item.selfEvaluatorMaterials.map(m => typeof m === 'string' ? m : m.name).join('、') : '无';
+                
+                const summaryMaterialsText = item.summaryMaterials && item.summaryMaterials.length > 0 ? 
+                    item.summaryMaterials.map(m => typeof m === 'string' ? m : m.name).join('、') : '无';
+                
+                const expertMaterialsText = item.expertMaterials && item.expertMaterials.length > 0 ? 
+                    item.expertMaterials.map(m => typeof m === 'string' ? m : m.name).join('、') : '无';
+                
+                // 是否有自评人
+                const hasSelfEvaluatorText = item.hasSelfEvaluator !== false ? '是' : '否';
+                
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td style="position: relative;">
+                        <span class="serial-number">${index + 1}</span>
+                        <button class="insert-btn" onclick="insertBeforeIndicator(${index})" title="在上方插入一行">↑</button>
+                    </td>
                     <td class="level-1">${item.level1}</td>
                     <td class="level-2">${item.level2}</td>
                     <td class="level-3">${item.level3}</td>
+                    <td style="text-align: center;">${hasSelfEvaluatorText}</td>
                     <td class="materials-cell">
-                        <div class="materials-content">${item.materials || '点击添加支撑材料'}</div>
-                        <button class="insert-btn" onclick="editMaterials(${index})">+</button>
+                        <div class="materials-content">${selfEvaluatorMaterialsText}</div>
+                    </td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${summaryMaterialsText}</div>
+                    </td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${expertMaterialsText}</div>
                     </td>
                     <td>
                         <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline; margin-right: 10px;" onclick="editIndicator(${index})">编辑</button>
@@ -845,19 +1055,270 @@
             document.getElementById('totalCount').textContent = evaluationData.length;
             const level1Count = [...new Set(evaluationData.map(item => item.level1))].length;
             const level2Count = [...new Set(evaluationData.map(item => item.level2))].length;
-            const hasMaterialsCount = evaluationData.filter(item => item.materials).length;
 
             document.querySelector('.stats .stat-item:nth-child(2) .stat-number').textContent = level1Count;
             document.querySelector('.stats .stat-item:nth-child(3) .stat-number').textContent = level2Count;
-            document.getElementById('hasMaterials').textContent = hasMaterialsCount;
         }
+
+        // 自评方式配置数据
+        let selfEvaluationConfig = {};
+
+        // 打开设置自评方式弹窗
+        function openSelfEvaluationSettings() {
+            generateIndicatorTree();
+            document.getElementById('selfEvaluationSettingsModal').style.display = 'block';
+        }
+
+        // 关闭设置自评方式弹窗
+        function closeSelfEvaluationSettingsModal() {
+            document.getElementById('selfEvaluationSettingsModal').style.display = 'none';
+        }
+
+        // 生成观测点树形结构 - 使用details/summary标签
+        function generateIndicatorTree() {
+            const treeContainer = document.getElementById('indicatorTree');
+            treeContainer.innerHTML = '';
+
+            // 构建树形结构数据
+            const treeData = {};
+            evaluationData.forEach((item, index) => {
+                if (!treeData[item.level1]) {
+                    treeData[item.level1] = {};
+                }
+                if (!treeData[item.level1][item.level2]) {
+                    treeData[item.level1][item.level2] = [];
+                }
+                treeData[item.level1][item.level2].push({
+                    index: index,
+                    level3: item.level3,
+                    hasSelfEvaluator: selfEvaluationConfig[index] !== false
+                });
+            });
+
+            // 创建树形结构
+            const treeRoot = document.createElement('div');
+            treeRoot.className = 'tree-root';
+
+            // 全部节点
+            const allDetails = document.createElement('details');
+            allDetails.className = 'tree-node tree-level-0';
+            allDetails.open = true;
+            
+            const allSummary = document.createElement('summary');
+            allSummary.innerHTML = `
+                <label>
+                    <input type="checkbox" class="tree-checkbox" checked>
+                    <span>全部</span>
+                </label>
+            `;
+            allDetails.appendChild(allSummary);
+
+            const allChildren = document.createElement('div');
+            allChildren.className = 'tree-children';
+            allDetails.appendChild(allChildren);
+
+            treeRoot.appendChild(allDetails);
+
+            // 遍历一级要素
+            Object.keys(treeData).forEach(level1 => {
+                const level1Details = document.createElement('details');
+                level1Details.className = 'tree-node tree-level-1';
+                level1Details.open = true;
+                
+                const level1Summary = document.createElement('summary');
+                level1Summary.innerHTML = `
+                    <label>
+                        <input type="checkbox" class="tree-checkbox" checked>
+                        <span>${level1}</span>
+                    </label>
+                `;
+                level1Details.appendChild(level1Summary);
+
+                const level1Children = document.createElement('div');
+                level1Children.className = 'tree-children';
+                level1Details.appendChild(level1Children);
+
+                allChildren.appendChild(level1Details);
+
+                // 遍历二级要素
+                Object.keys(treeData[level1]).forEach(level2 => {
+                    const level2Details = document.createElement('details');
+                    level2Details.className = 'tree-node tree-level-2';
+                    level2Details.open = true;
+                    
+                    const level2Summary = document.createElement('summary');
+                    level2Summary.innerHTML = `
+                        <label>
+                            <input type="checkbox" class="tree-checkbox" checked>
+                            <span>${level2}</span>
+                        </label>
+                    `;
+                    level2Details.appendChild(level2Summary);
+
+                    const level2Children = document.createElement('div');
+                    level2Children.className = 'tree-children';
+                    level2Details.appendChild(level2Children);
+
+                    level1Children.appendChild(level2Details);
+
+                    // 遍历观测点
+                    treeData[level1][level2].forEach(item => {
+                        const level3Node = document.createElement('div');
+                        level3Node.className = 'tree-node tree-level-3';
+                        level3Node.innerHTML = `
+                            <label>
+                                <input type="checkbox" class="tree-checkbox" data-index="${item.index}" ${item.hasSelfEvaluator ? 'checked' : ''}>
+                                <span>${item.level3}</span>
+                            </label>
+                        `;
+                        level2Children.appendChild(level3Node);
+                    });
+                });
+            });
+
+            treeContainer.appendChild(treeRoot);
+
+            // 添加事件监听器
+            addTreeEventListeners();
+        }
+
+        // 添加树形结构事件监听器
+        function addTreeEventListeners() {
+            const checkboxes = document.querySelectorAll('#indicatorTree .tree-checkbox');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const isChecked = this.checked;
+                    const level = this.dataset.level;
+
+                    if (level === 'root') {
+                        // 全选/全不选
+                        checkboxes.forEach(cb => cb.checked = isChecked);
+                    } else if (this.dataset.group) {
+                        // 一级或二级要素，选中/取消选中所有子节点
+                        const parent = this.closest('.tree-node');
+                        const children = parent.querySelectorAll('.tree-checkbox');
+                        children.forEach(cb => cb.checked = isChecked);
+                    } else if (this.dataset.index) {
+                        // 观测点级别，更新父级状态
+                        updateParentCheckboxState(this);
+                    }
+                });
+            });
+
+            // 是否有自评人单选按钮事件
+            const hasSelfEvaluatorRadios = document.querySelectorAll('input[name="hasSelfEvaluator"]');
+            hasSelfEvaluatorRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const hasSelfEvaluator = this.value === 'true';
+                    // 更新所有观测点的显示状态
+                    updateTreeVisibility(hasSelfEvaluator);
+                });
+            });
+        }
+
+        // 更新父级复选框状态
+        function updateParentCheckboxState(checkbox) {
+            const parent = checkbox.closest('.tree-children');
+            if (!parent) return;
+
+            const parentNode = parent.closest('.tree-node');
+            if (!parentNode) return;
+
+            const parentCheckbox = parentNode.querySelector(':scope > .tree-label > .tree-checkbox');
+            if (!parentCheckbox) return;
+
+            const siblings = parent.querySelectorAll(':scope > .tree-node > .tree-label > .tree-checkbox');
+            const allChecked = Array.from(siblings).every(cb => cb.checked);
+            const someChecked = Array.from(siblings).some(cb => cb.checked);
+
+            parentCheckbox.checked = allChecked;
+            parentCheckbox.indeterminate = someChecked && !allChecked;
+
+            // 递归更新上级
+            updateParentCheckboxState(parentCheckbox);
+        }
+
+        // 更新树形结构可见性
+        function updateTreeVisibility(hasSelfEvaluator) {
+            const level3Nodes = document.querySelectorAll('#indicatorTree .level-3-node');
+            level3Nodes.forEach(node => {
+                const checkbox = node.previousElementSibling;
+                if (checkbox && checkbox.dataset.index) {
+                    const index = parseInt(checkbox.dataset.index);
+                    // 根据配置显示或隐藏
+                    if (!hasSelfEvaluator) {
+                        // 如果没有自评人，隐藏自评人支撑材料相关选项
+                        checkbox.checked = false;
+                    }
+                }
+            });
+        }
+
+        // 保存自评方式设置
+        document.getElementById('selfEvaluationSettingsForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const hasSelfEvaluator = document.querySelector('input[name="hasSelfEvaluator"]:checked').value === 'true';
+            const checkboxes = document.querySelectorAll('#indicatorTree .tree-checkbox[data-index]');
+
+            checkboxes.forEach(checkbox => {
+                const index = parseInt(checkbox.dataset.index);
+                selfEvaluationConfig[index] = checkbox.checked;
+            });
+
+            // 更新所有观测点的hasSelfEvaluator属性
+            evaluationData.forEach((item, index) => {
+                item.hasSelfEvaluator = selfEvaluationConfig[index] !== false;
+            });
+
+            closeSelfEvaluationSettingsModal();
+            alert('自评方式设置已保存！');
+        });
 
         // 新增指标
         function addNewIndicator() {
             document.getElementById('modalTitle').textContent = '新增指标';
             document.getElementById('indicatorForm').reset();
-            document.getElementById('materialsList').innerHTML = '';
+            document.getElementById('hasSelfEvaluatorSelect').value = 'true';
+            document.getElementById('selfEvaluatorMaterialsList').innerHTML = '';
+            document.getElementById('summaryMaterialsList').innerHTML = '';
+            document.getElementById('expertMaterialsList').innerHTML = '';
             document.getElementById('indicatorModal').style.display = 'block';
+        }
+
+        // 用于存储新插入的指标索引，以便在取消时删除
+        let pendingInsertIndex = -1;
+
+        // 在上方插入指标
+        function insertBeforeIndicator(index) {
+            // 创建新指标对象
+            const newItem = {
+                level1: '',
+                level2: '',
+                level3: '',
+                hasSelfEvaluator: true,
+                selfEvaluatorMaterials: [],
+                summaryMaterials: [],
+                expertMaterials: []
+            };
+            
+            // 在指定位置插入新指标
+            evaluationData.splice(index, 0, newItem);
+            
+            // 存储新插入的指标索引
+            pendingInsertIndex = index;
+            
+            // 重新渲染表格
+            renderTable();
+            updateStats();
+            populateFilters();
+            
+            // 打开编辑模态框编辑新插入的指标
+            editIndicator(index);
+            
+            // 设置弹窗标题
+            document.getElementById('modalTitle').textContent = '在上方插入指标';
         }
 
         // 编辑指标
@@ -867,17 +1328,40 @@
             document.getElementById('level1Input').value = item.level1;
             document.getElementById('level2Input').value = item.level2;
             document.getElementById('level3Input').value = item.level3;
+            document.getElementById('hasSelfEvaluatorSelect').value = item.hasSelfEvaluator !== false ? 'true' : 'false';
             
-            // 填充支撑材料
-            const materialsList = document.getElementById('materialsList');
-            materialsList.innerHTML = '';
-            if (item.materials) {
-                const materials = item.materials.split('\n');
-                materials.forEach(material => {
-                    if (material.trim()) {
-                        addMaterialsItem('materials', material.trim());
-                    }
+            // 清空所有材料列表
+            document.getElementById('selfEvaluatorMaterialsList').innerHTML = '';
+            document.getElementById('summaryMaterialsList').innerHTML = '';
+            document.getElementById('expertMaterialsList').innerHTML = '';
+            
+            // 填充自评人支撑材料（如果有）
+            if (item.selfEvaluatorMaterials && item.selfEvaluatorMaterials.length > 0) {
+                item.selfEvaluatorMaterials.forEach(material => {
+                    addMaterialsItem('selfEvaluatorMaterials', typeof material === 'string' ? material : material.name);
                 });
+            }
+            
+            // 填充自评汇总人支撑材料
+            if (item.summaryMaterials && item.summaryMaterials.length > 0) {
+                item.summaryMaterials.forEach(material => {
+                    addMaterialsItem('summaryMaterials', typeof material === 'string' ? material : material.name);
+                });
+            }
+            
+            // 填充专家评估支撑材料
+            if (item.expertMaterials && item.expertMaterials.length > 0) {
+                item.expertMaterials.forEach(material => {
+                    addMaterialsItem('expertMaterials', typeof material === 'string' ? material : material.name);
+                });
+            }
+            
+            // 根据是否有自评人显示/隐藏自评人支撑材料区域
+            const selfEvaluatorSection = document.getElementById('selfEvaluatorMaterialsSection');
+            if (item.hasSelfEvaluator === false) {
+                selfEvaluatorSection.style.display = 'none';
+            } else {
+                selfEvaluatorSection.style.display = 'block';
             }
             
             // 保存索引以便后续更新
@@ -900,39 +1384,119 @@
             editIndicator(index);
         }
 
+        // 文档模板选项
+        const templateOptions = {
+            selfEvaluatorMaterials: [
+                { value: 'syllabus', text: '课程大纲模板' },
+                { value: 'teaching_plan', text: '教学计划模板' },
+                { value: 'assessment_method', text: '考核方式说明模板' },
+                { value: 'teaching_reflection', text: '教学反思模板' }
+            ],
+            summaryMaterials: [
+                { value: 'summary_report', text: '自评汇总报告模板' },
+                { value: 'data_summary', text: '数据统计汇总模板' },
+                { value: 'improvement_plan', text: '改进计划模板' }
+            ],
+            expertMaterials: [
+                { value: 'classroom_video', text: '课堂教学录像模板' },
+                { value: 'assessment_data', text: '课程考核资料模板' },
+                { value: 'student_homework', text: '学生作业样本模板' },
+                { value: 'teaching_reflection', text: '教学反思报告模板' }
+            ]
+        };
+
         // 添加材料项
-        function addMaterialsItem(type, value = '') {
-            const listId = type === 'materials' ? 'materialsList' : 'expertMaterialsList';
-            const list = document.getElementById(listId);
+        function addMaterialsItem(prefix, value = '') {
+            const listContainer = document.getElementById(`${prefix}List`);
+            const itemCount = listContainer.children.length;
+            const itemId = `${prefix}Item_${itemCount}`;
             
-            const materialsItem = document.createElement('div');
-            materialsItem.className = 'materials-item';
-            materialsItem.style.display = 'flex';
-            materialsItem.style.alignItems = 'center';
-            materialsItem.style.gap = '10px';
-            materialsItem.style.marginBottom = '10px';
-            
-            materialsItem.innerHTML = `
-                <input type="text" value="${value}" placeholder="请输入支撑材料..." style="flex: 1;">
-                <button type="button" class="btn btn-sm btn-secondary" onclick="removeMaterialsItem(this)" style="padding: 2px 8px; font-size: 12px;">删除</button>
+            // 创建材料项HTML
+            const itemHtml = `
+                <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-right: 10px;">
+                        <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                    </div>
+                    <div class="material-input-container" style="flex: 1; margin-right: 10px;">
+                        <input type="text" placeholder="输入材料名称..." value="${value}" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                    </div>
+                    <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
+                        <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            <option value="">请选择模板</option>
+                            ${templateOptions[prefix] ? templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('') : ''}
+                        </select>
+                    </div>
+                    <button type="button" onclick="removeMaterialsItemById('${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        删除
+                    </button>
+                </div>
             `;
             
-            list.appendChild(materialsItem);
+            // 添加到容器
+            listContainer.insertAdjacentHTML('beforeend', itemHtml);
+            
+            // 获取刚添加的材料项和输入框
+            const item = document.getElementById(itemId);
+            const templateRequired = item.querySelector('.template-required');
+            const materialInput = item.querySelector('.material-input-container input');
+            const templateSelect = item.querySelector('.template-select');
+            const templateSelectContainer = item.querySelector('.template-select-container');
+            
+            // 添加模板选择事件监听器
+            templateRequired.addEventListener('change', function() {
+                const requiresTemplate = this.value === 'true';
+                
+                // 显示或隐藏对应的输入控件
+                if (requiresTemplate) {
+                    item.querySelector('.material-input-container').style.display = 'none';
+                    templateSelectContainer.style.display = 'flex';
+                } else {
+                    item.querySelector('.material-input-container').style.display = 'flex';
+                    templateSelectContainer.style.display = 'none';
+                }
+            });
         }
 
-        // 删除材料项
+        // 删除支撑材料项（通过ID）
+        function removeMaterialsItemById(itemId) {
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.remove();
+            }
+        }
+
+        // 删除材料项（兼容旧版本）
         function removeMaterialsItem(button) {
             button.parentElement.remove();
         }
 
         // 关闭模态框
         function closeModal() {
+            // 检查是否有待插入的指标，如果有，就删除它
+            if (pendingInsertIndex !== -1) {
+                evaluationData.splice(pendingInsertIndex, 1);
+                renderTable();
+                updateStats();
+                populateFilters();
+                pendingInsertIndex = -1;
+            }
+            
             document.getElementById('indicatorModal').style.display = 'none';
+            // 清除索引
+            document.getElementById('indicatorForm').removeAttribute('data-index');
         }
 
         // 导出数据
         function exportData() {
-            const dataStr = JSON.stringify(evaluationData, null, 2);
+            const exportData = {
+                indicators: evaluationData,
+                selfEvaluationConfig: selfEvaluationConfig
+            };
+            const dataStr = JSON.stringify(exportData, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
@@ -959,6 +1523,32 @@
             });
         });
 
+        // 收集材料项数据
+        function collectMaterialsData(listId) {
+            const materials = [];
+            const items = document.querySelectorAll(`#${listId} .materials-item`);
+            items.forEach(item => {
+                const templateRequired = item.querySelector('.template-required').value === 'true';
+                const materialInput = item.querySelector('.material-input-container input');
+                const templateSelect = item.querySelector('.template-select');
+                
+                if (templateRequired && templateSelect && templateSelect.value) {
+                    materials.push({
+                        name: templateSelect.options[templateSelect.selectedIndex].text,
+                        template: templateSelect.value,
+                        requiresTemplate: true
+                    });
+                } else if (materialInput && materialInput.value.trim()) {
+                    materials.push({
+                        name: materialInput.value.trim(),
+                        template: null,
+                        requiresTemplate: false
+                    });
+                }
+            });
+            return materials;
+        }
+
         // 表单提交事件
         document.getElementById('indicatorForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -966,30 +1556,37 @@
             const level1 = document.getElementById('level1Input').value;
             const level2 = document.getElementById('level2Input').value;
             const level3 = document.getElementById('level3Input').value;
+            const hasSelfEvaluator = document.getElementById('hasSelfEvaluatorSelect').value === 'true';
             
-            // 收集支撑材料
-            const materialsInputs = document.querySelectorAll('#materialsList input');
-            const materials = Array.from(materialsInputs)
-                .map(input => input.value.trim())
-                .filter(value => value)
-                .join('\n');
+            // 收集各类支撑材料
+            const selfEvaluatorMaterials = collectMaterialsData('selfEvaluatorMaterialsList');
+            const summaryMaterials = collectMaterialsData('summaryMaterialsList');
+            const expertMaterials = collectMaterialsData('expertMaterialsList');
             
             const newItem = {
                 level1,
                 level2,
                 level3,
-                materials: materials || undefined
+                hasSelfEvaluator,
+                selfEvaluatorMaterials: selfEvaluatorMaterials.length > 0 ? selfEvaluatorMaterials : undefined,
+                summaryMaterials: summaryMaterials.length > 0 ? summaryMaterials : undefined,
+                expertMaterials: expertMaterials.length > 0 ? expertMaterials : undefined
             };
             
             // 检查是新增还是编辑
             const index = this.dataset.index;
             if (index !== undefined) {
-                // 编辑现有指标
+                // 编辑现有指标，保留原有的hasSelfEvaluator配置
+                newItem.hasSelfEvaluator = evaluationData[index].hasSelfEvaluator;
                 evaluationData[index] = newItem;
             } else {
-                // 新增指标
+                // 新增指标，默认有自评人
+                newItem.hasSelfEvaluator = true;
                 evaluationData.push(newItem);
             }
+            
+            // 重置待插入索引，因为指标已经成功保存
+            pendingInsertIndex = -1;
             
             // 关闭模态框并更新表格
             closeModal();
