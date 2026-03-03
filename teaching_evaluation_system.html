@@ -1284,6 +1284,7 @@
             document.getElementById('selfEvaluatorMaterialsList').innerHTML = '';
             document.getElementById('summaryMaterialsList').innerHTML = '';
             document.getElementById('expertMaterialsList').innerHTML = '';
+            document.getElementById('selfEvaluatorMaterialsSection').style.display = 'block';
             document.getElementById('indicatorModal').style.display = 'block';
         }
 
@@ -1319,6 +1320,9 @@
             
             // 设置弹窗标题
             document.getElementById('modalTitle').textContent = '在上方插入指标';
+            
+            // 确保自评人支撑材料区域显示
+            document.getElementById('selfEvaluatorMaterialsSection').style.display = 'block';
         }
 
         // 编辑指标
@@ -1549,6 +1553,17 @@
             return materials;
         }
 
+        // 监听"是否有自评人"选择变化事件
+        document.getElementById('hasSelfEvaluatorSelect').addEventListener('change', function() {
+            const hasSelfEvaluator = this.value === 'true';
+            const selfEvaluatorMaterialsSection = document.getElementById('selfEvaluatorMaterialsSection');
+            if (hasSelfEvaluator) {
+                selfEvaluatorMaterialsSection.style.display = 'block';
+            } else {
+                selfEvaluatorMaterialsSection.style.display = 'none';
+            }
+        });
+
         // 表单提交事件
         document.getElementById('indicatorForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -1576,12 +1591,10 @@
             // 检查是新增还是编辑
             const index = this.dataset.index;
             if (index !== undefined) {
-                // 编辑现有指标，保留原有的hasSelfEvaluator配置
-                newItem.hasSelfEvaluator = evaluationData[index].hasSelfEvaluator;
+                // 编辑现有指标
                 evaluationData[index] = newItem;
             } else {
-                // 新增指标，默认有自评人
-                newItem.hasSelfEvaluator = true;
+                // 新增指标
                 evaluationData.push(newItem);
             }
             
