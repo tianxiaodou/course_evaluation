@@ -121,7 +121,16 @@
       <el-header height="60px">
         <!-- <div style="font-size: 18px; font-weight: bold;">办学条件监测</div> -->
         <div>
-          <el-button type="primary" @click="exportReport">导出</el-button>
+          <el-dropdown @command="exportReport">
+            <el-button type="primary">
+              导出
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="dataTable">监测数据表</el-dropdown-item>
+              <el-dropdown-item command="report">办学条件监测报告</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </el-header>
       <el-main>
@@ -415,10 +424,28 @@
           this.selectedIndicator = row;
           this.detailDialogVisible = true;
         },
-        exportReport() {
-          const dataStr = JSON.stringify(this.data, null, 2);
-          const dataBlob = new Blob([dataStr], {type: 'application/json'});
-          saveAs(dataBlob, '办学条件监测报告.json');
+        exportReport(command) {
+          if (command === 'dataTable') {
+            // 导出监测数据表
+            const dataStr = JSON.stringify(this.data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            saveAs(dataBlob, '监测数据表.json');
+          } else if (command === 'report') {
+            // 导出办学条件监测报告
+            const reportData = {
+              title: '办学条件监测报告',
+              date: new Date().toLocaleDateString(),
+              data: this.data,
+              summary: {
+                totalIndicators: this.data.length,
+                compliantIndicators: this.data.filter(row => this.isCompliant(row)).length,
+                nonCompliantIndicators: this.data.filter(row => !this.isCompliant(row)).length
+              }
+            };
+            const reportStr = JSON.stringify(reportData, null, 2);
+            const reportBlob = new Blob([reportStr], {type: 'application/json'});
+            saveAs(reportBlob, '办学条件监测报告.json');
+          }
         }
       }
     });

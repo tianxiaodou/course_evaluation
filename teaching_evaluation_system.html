@@ -626,6 +626,7 @@
                             <th style="width: 200px;">自评人支撑材料</th>
                             <th style="width: 200px;">自评汇总人支撑材料</th>
                             <th style="width: 200px;">专家支撑材料</th>
+                            <th style="width: 200px;">撰写提示</th>
                             <th style="width: 80px;">操作</th>
                         </tr>
                     </thead>
@@ -723,6 +724,11 @@
                     <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('expertMaterials')" style="margin-top: 10px;">
                         + 添加专家评估支撑材料
                     </button>
+                </div>
+                <!-- 撰写提示 -->
+                <div class="form-group">
+                    <label for="writingTipInput">撰写提示：</label>
+                    <input type="text" id="writingTipInput" placeholder="提示自评人在写总结时的注意事项">
                 </div>
                 <div style="text-align: center; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()" style="margin-right: 10px;">取消</button>
@@ -982,6 +988,9 @@
                     </td>
                     <td class="materials-cell">
                         <div class="materials-content">${expertMaterialsText}</div>
+                    </td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${item.writingTip || '无'}</div>
                     </td>
                     <td>
                         <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline; margin-right: 10px;" onclick="editIndicator(${index})">编辑</button>
@@ -1281,6 +1290,7 @@
             document.getElementById('modalTitle').textContent = '新增指标';
             document.getElementById('indicatorForm').reset();
             document.getElementById('hasSelfEvaluatorSelect').value = 'true';
+            document.getElementById('writingTipInput').value = '';
             document.getElementById('selfEvaluatorMaterialsList').innerHTML = '';
             document.getElementById('summaryMaterialsList').innerHTML = '';
             document.getElementById('expertMaterialsList').innerHTML = '';
@@ -1301,7 +1311,8 @@
                 hasSelfEvaluator: true,
                 selfEvaluatorMaterials: [],
                 summaryMaterials: [],
-                expertMaterials: []
+                expertMaterials: [],
+                writingTip: ''
             };
             
             // 在指定位置插入新指标
@@ -1323,6 +1334,9 @@
             
             // 确保自评人支撑材料区域显示
             document.getElementById('selfEvaluatorMaterialsSection').style.display = 'block';
+            
+            // 确保撰写提示输入框为空
+            document.getElementById('writingTipInput').value = '';
         }
 
         // 编辑指标
@@ -1333,6 +1347,7 @@
             document.getElementById('level2Input').value = item.level2;
             document.getElementById('level3Input').value = item.level3;
             document.getElementById('hasSelfEvaluatorSelect').value = item.hasSelfEvaluator !== false ? 'true' : 'false';
+            document.getElementById('writingTipInput').value = item.writingTip || '';
             
             // 清空所有材料列表
             document.getElementById('selfEvaluatorMaterialsList').innerHTML = '';
@@ -1572,6 +1587,7 @@
             const level2 = document.getElementById('level2Input').value;
             const level3 = document.getElementById('level3Input').value;
             const hasSelfEvaluator = document.getElementById('hasSelfEvaluatorSelect').value === 'true';
+            const writingTip = document.getElementById('writingTipInput').value;
             
             // 收集各类支撑材料
             const selfEvaluatorMaterials = collectMaterialsData('selfEvaluatorMaterialsList');
@@ -1585,7 +1601,8 @@
                 hasSelfEvaluator,
                 selfEvaluatorMaterials: selfEvaluatorMaterials.length > 0 ? selfEvaluatorMaterials : undefined,
                 summaryMaterials: summaryMaterials.length > 0 ? summaryMaterials : undefined,
-                expertMaterials: expertMaterials.length > 0 ? expertMaterials : undefined
+                expertMaterials: expertMaterials.length > 0 ? expertMaterials : undefined,
+                writingTip: writingTip || undefined
             };
             
             // 检查是新增还是编辑
