@@ -478,10 +478,11 @@
                 </div>
             </div>
             <div class="controls-right">
+                <button class="btn btn-outline" onclick="window.location.href='ai_evaluation_rules.html'">AI评估规则</button>
                 <!-- <button class="btn btn-outline" onclick="importData()">导入数据</button> -->
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
-                <button class="btn btn-primary" onclick="openScoringRules()">评分规则</button>
+                <button class="btn btn-primary" onclick="openScoringRules()">结论设置</button>
             </div>
         </div>
 
@@ -564,11 +565,11 @@
         </div>
     </div>
 
-    <!-- 评分规则配置模态框 -->
+    <!-- 结论设置配置模态框 -->
     <div id="scoringRulesModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>评分规则配置</h2>
+            <h2>结论设置配置</h2>
             <form id="scoringRulesForm" onsubmit="event.preventDefault(); saveScoringRules();">
                 <div class="form-group">
                     <label for="scoringType">打分类型：</label>
@@ -1495,7 +1496,7 @@
             document.getElementById('indicatorModal').style.display = 'none';
         }
 
-        // 打开评分规则弹窗
+        // 打开结论设置弹窗
         function openScoringRules() {
             const modal = document.getElementById('scoringRulesModal');
             modal.style.display = 'block';
@@ -1516,7 +1517,7 @@
             }
         }
 
-        // 关闭评分规则弹窗
+        // 关闭结论设置弹窗
         function closeScoringRulesModal() {
             document.getElementById('scoringRulesModal').style.display = 'none';
         }
@@ -1667,7 +1668,7 @@
             }
         }
 
-        // 保存评分规则配置
+        // 保存结论设置配置
         function saveScoringRules() {
             const scoringType = document.getElementById('scoringType').value;
             const gradeConversion = {
@@ -1699,7 +1700,7 @@
             // 保存到本地存储
             localStorage.setItem('scoringRules', JSON.stringify(scoringRules));
             
-            alert('评分规则配置已保存！');
+            alert('结论设置配置已保存！');
             closeScoringRulesModal();
         }
 
