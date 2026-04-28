@@ -436,7 +436,7 @@
 <body>
 
     <div class="container">
-        <div class="stats">
+        <!-- <div class="stats">
             <div class="stat-item">
                 <div class="stat-number" id="totalCount">41</div>
                 <div class="stat-label">总观测点数</div>
@@ -453,7 +453,7 @@
                 <div class="stat-number" id="hasMaterials">0</div>
                 <div class="stat-label">已设置自评支撑材料</div>
             </div>
-        </div>
+        </div> -->
 
         <div class="controls">
             <div class="controls-left">
@@ -478,7 +478,7 @@
                 </div>
             </div>
             <div class="controls-right">
-                <button class="btn btn-outline" onclick="window.location.href='ai_evaluation_rules.html'">AI评估规则</button>
+                <!-- <button class="btn btn-outline" onclick="window.location.href='ai_evaluation_rules.html'">AI评估规则</button> -->
                 <!-- <button class="btn btn-outline" onclick="importData()">导入数据</button> -->
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
@@ -973,6 +973,10 @@
                     editIndicator(index);
                 });
                 
+                // 处理材料显示
+                const displayMaterials = Array.isArray(item.materials) ? item.materials.map(m => m.name).join('\n') : item.materials;
+                const displayExpertMaterials = Array.isArray(item.expertMaterials) ? item.expertMaterials.map(m => m.name).join('\n') : item.expertMaterials;
+                
                 row.innerHTML = `
                     <td style="position: relative;">
                         <span class="serial-number">${index + 1}</span>
@@ -983,10 +987,10 @@
                     <td class="level-3">${item.level3}</td>
                     <td class="weight-cell">${item.weight || '0'}</td>
                     <td class="materials-cell">
-                        <div class="materials-content">${item.materials || '暂无自评支撑材料要求'}</div>
+                        <div class="materials-content">${displayMaterials || '暂无自评支撑材料要求'}</div>
                     </td>
                     <td class="expert-materials-cell">
-                        <div class="expert-materials-content">${item.expertMaterials || '暂无专家评估支撑材料要求'}</div>
+                        <div class="expert-materials-content">${displayExpertMaterials || '暂无专家评估支撑材料要求'}</div>
                     </td>
                     <td class="standard-cell">
                         <div class="standard-content">${item.standard || '暂无评估标准'}</div>
@@ -1039,8 +1043,9 @@
             } else {
                 const expandedRow = document.createElement('tr');
                 expandedRow.className = 'expanded-row';
-                const fullMaterials = filteredData[index].materials || '暂无自评支撑材料要求';
-                const fullExpertMaterials = filteredData[index].expertMaterials || '暂无专家评估支撑材料要求';
+                // 处理材料显示
+                const fullMaterials = Array.isArray(filteredData[index].materials) ? filteredData[index].materials.map(m => m.name).join('\n') : (filteredData[index].materials || '暂无自评支撑材料要求');
+                const fullExpertMaterials = Array.isArray(filteredData[index].expertMaterials) ? filteredData[index].expertMaterials.map(m => m.name).join('\n') : (filteredData[index].expertMaterials || '暂无专家评估支撑材料要求');
                 const fullStandard = filteredData[index].standard || '暂无评估标准';
 
                 expandedRow.innerHTML = `
@@ -1218,9 +1223,9 @@
             
             // 添加自评支撑材料项
             if (item.materials) {
-                const materials = item.materials.split('\n');
+                const materials = Array.isArray(item.materials) ? item.materials : item.materials.split('\n').map(name => ({ name: name.trim(), aiRule: '' })).filter(item => item.name);
                 materials.forEach(material => {
-                    if (material.trim()) {
+                    if (material.name && material.name.trim()) {
                         const listContainer = document.getElementById('materialsList');
                         const itemCount = listContainer.children.length;
                         const itemId = `materialsItem_${itemCount}`;
@@ -1234,43 +1239,46 @@
                         ];
                         
                         // 检查是否是模板
-                        const isTemplate = templateOptions.some(option => option.text === material);
+                        const isTemplate = templateOptions.some(option => option.text === material.name);
                         const templateRequiredValue = isTemplate ? 'true' : 'false';
-                        const statusText = isTemplate ? '需要模板' : '无需模板';
-                        const statusBg = isTemplate ? '#28a745' : '#e0e0e0';
-                        const statusColor = isTemplate ? 'white' : 'black';
-                        const materialInputDisplay = isTemplate ? 'none' : 'block';
-                        const templateSelectDisplay = isTemplate ? 'block' : 'none';
+                        const materialInputDisplay = isTemplate ? 'none' : 'flex';
+                        const templateSelectDisplay = isTemplate ? 'flex' : 'none';
                         
                         // 找到模板对应的value
                         let templateValue = '';
                         if (isTemplate) {
-                            const template = templateOptions.find(option => option.text === material);
+                            const template = templateOptions.find(option => option.text === material.name);
                             templateValue = template ? template.value : '';
                         }
                         
                         // 创建材料项HTML
                         const itemHtml = `
-                            <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                                <div style="display: flex; align-items: center; margin-right: 10px;">
-                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                            <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
-                                <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
-                                <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
-                            </select>
-                        </div>
-                                <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay === 'block' ? 'flex' : 'none'};">
-                                    <input type="text" value="${!isTemplate ? material : ''}" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; margin-right: 10px;">
+                                        <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                            <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
+                                            <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
+                                        </select>
+                                    </div>
+                                    <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay};">
+                                        <input type="text" value="${!isTemplate ? material.name : ''}" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                    </div>
+                                    <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay};">
+                                        <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                            <option value="">请选择模板</option>
+                                            ${templateOptions.map(option => `<option value="${option.value}" ${option.value === templateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <button type="button" onclick="removeMaterialsItem('materials', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                        删除
+                                    </button>
                                 </div>
-                                <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay === 'block' ? 'flex' : 'none'};">
-                                    <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
-                                        <option value="">请选择模板</option>
-                                        ${templateOptions.map(option => `<option value="${option.value}" ${option.value === templateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
-                                    </select>
+                                <div style="width: 100%;">
+                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">AI评估规则：</label>
+                                    <input type="text" value="${material.aiRule || ''}" placeholder="输入AI评估规则..." style="width: calc(100% - 80px); padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                 </div>
-                                <button type="button" onclick="removeMaterialsItem('materials', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                                    删除
-                                </button>
                             </div>
                         `;
                         
@@ -1301,9 +1309,9 @@
             
             // 添加专家评估支撑材料项
             if (item.expertMaterials) {
-                const expertMaterials = item.expertMaterials.split('\n');
+                const expertMaterials = Array.isArray(item.expertMaterials) ? item.expertMaterials.map(m => typeof m === 'object' ? m.name : m) : item.expertMaterials.split('\n');
                 expertMaterials.forEach(material => {
-                    if (material.trim()) {
+                    if (material && material.trim()) {
                         const listContainer = document.getElementById('expertMaterialsList');
                         const itemCount = listContainer.children.length;
                         const itemId = `expertMaterialsItem_${itemCount}`;
@@ -1319,11 +1327,8 @@
                         // 检查是否是模板
                         const isTemplate = templateOptions.some(option => option.text === material);
                         const templateRequiredValue = isTemplate ? 'true' : 'false';
-                        const statusText = isTemplate ? '需要模板' : '无需模板';
-                        const statusBg = isTemplate ? '#28a745' : '#e0e0e0';
-                        const statusColor = isTemplate ? 'white' : 'black';
-                        const materialInputDisplay = isTemplate ? 'none' : 'block';
-                        const templateSelectDisplay = isTemplate ? 'block' : 'none';
+                        const materialInputDisplay = isTemplate ? 'none' : 'flex';
+                        const templateSelectDisplay = isTemplate ? 'flex' : 'none';
                         
                         // 找到模板对应的value
                         let templateValue = '';
@@ -1342,10 +1347,10 @@
                                         <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
                                     </select>
                                 </div>
-                                <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay === 'block' ? 'flex' : 'none'};">
+                                <div class="material-input-container" style="flex: 1; margin-right: 10px; display: ${materialInputDisplay};">
                                     <input type="text" value="${!isTemplate ? material : ''}" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                 </div>
-                                <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay === 'block' ? 'flex' : 'none'};">
+                                <div class="template-select-container" style="flex: 1; margin-right: 10px; display: ${templateSelectDisplay};">
                                     <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                         <option value="">请选择模板</option>
                                         ${templateOptions.map(option => `<option value="${option.value}" ${option.value === templateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
@@ -1395,6 +1400,8 @@
             materialsItems.forEach(item => {
                 const templateRequired = item.querySelector('.template-required').value === 'true';
                 let materialValue = '';
+                const aiRuleInput = item.querySelector('input[placeholder="输入AI评估规则..."]');
+                const aiRule = aiRuleInput ? aiRuleInput.value.trim() : '';
                 
                 if (templateRequired) {
                     const templateSelect = item.querySelector('.template-select');
@@ -1408,10 +1415,9 @@
                 }
                 
                 if (materialValue) {
-                    materials.push(materialValue);
+                    materials.push({ name: materialValue, aiRule: aiRule });
                 }
             });
-            const materialsValue = materials.join('\n');
 
             // 处理专家评估支撑材料
             const expertMaterialsItems = document.querySelectorAll('#expertMaterialsList .materials-item');
@@ -1435,15 +1441,14 @@
                     expertMaterials.push(materialValue);
                 }
             });
-            const expertMaterialsValue = expertMaterials.join('\n');
 
             const formData = {
                 level1: document.getElementById('level1Input').value,
                 level2: document.getElementById('level2Input').value,
                 level3: document.getElementById('level3Input').value,
                 weight: document.getElementById('weightInput').value || '0',
-                materials: materialsValue,
-                expertMaterials: expertMaterialsValue,
+                materials: materials,
+                expertMaterials: expertMaterials,
                 standard: document.getElementById('standardInput').value
             };
 
@@ -1557,7 +1562,7 @@
             };
             
             // 创建材料项HTML
-            const itemHtml = `
+            let itemHtml = `
                 <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                     <div style="display: flex; align-items: center; margin-right: 10px;">
                         <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
@@ -1580,6 +1585,39 @@
                     </button>
                 </div>
             `;
+            
+            // 只在自评支撑材料中添加AI评估规则输入框
+            if (prefix === 'materials') {
+                itemHtml = `
+                    <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; margin-right: 10px;">
+                                <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                                <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                            <div class="material-input-container" style="flex: 1; margin-right: 10px;">
+                                <input type="text" placeholder="输入材料名称..." style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            </div>
+                            <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
+                                <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                    <option value="">请选择模板</option>
+                                    ${templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('')}
+                                </select>
+                            </div>
+                            <button type="button" onclick="removeMaterialsItem('${prefix}', '${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                删除
+                            </button>
+                        </div>
+                        <div style="width: 100%; display: flex; align-items: center;">
+                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">AI评估规则：</label>
+                            <input type="text" placeholder="输入AI评估规则..." style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </div>
+                    </div>
+                `;
+            }
             
             // 添加到容器
             listContainer.insertAdjacentHTML('beforeend', itemHtml);
