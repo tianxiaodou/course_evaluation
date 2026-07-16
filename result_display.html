@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料评估结果展示</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 22px; }
+        .header .nav-links { display: flex; gap: 14px; }
+        .header .nav-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .header .nav-links a:hover, .header .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 14px 20px;
+            gap: 20px;
+            background: #f5f5f5;
+        }
+
+        /* 左侧面板 - 增宽 */
+        .left-panel {
+            flex: 0 0 420px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .left-panel .panel-header {
+            padding: 20px 20px 14px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .left-panel .panel-header .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 下载按钮 */
+        .download-bar {
+            padding: 10px 20px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .download-btn:hover {
+            background: #5a6fd6;
+            transform: translateY(-1px);
+        }
+
+        .chapter-directory { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+        .chapter-dir-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+            font-size: 16px;
+        }
+        .chapter-dir-item:hover { background: #f0f2ff; }
+        .chapter-dir-item.active {
+            background: #eef0ff;
+            border-left-color: #667eea;
+            font-weight: bold;
+        }
+
+        .dir-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dir-dot.pass { background: #28a745; }
+        .dir-dot.partial { background: #ffc107; }
+        .dir-dot.fail { background: #dc3545; }
+
+        .dir-name { flex: 1; }
+        .dir-badge {
+            font-size: 13px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+        .dir-badge.pass { background: #d4edda; color: #155724; }
+        .dir-badge.partial { background: #fff3cd; color: #856404; }
+        .dir-badge.fail { background: #f8d7da; color: #721c24; }
+
+        /* 右侧面板 */
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 28px;
+            padding: 14px 32px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+        .stats-bar .stat-item { display: flex; align-items: center; gap: 8px; }
+        .stats-bar .stat-num { font-weight: bold; font-size: 17px; }
+        .stats-bar .stat-num.pass { color: #28a745; }
+        .stats-bar .stat-num.partial { color: #ffc107; }
+        .stats-bar .stat-num.fail { color: #dc3545; }
+
+        .right-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px;
+        }
+
+        .chapter-detail { display: none; }
+        .chapter-detail.active { display: block; }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .detail-header h2 { font-size: 20px; }
+
+        .conclusion-badge {
+            padding: 5px 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .conclusion-badge.pass { background: #d4edda; color: #155724; }
+        .conclusion-badge.partial { background: #fff3cd; color: #856404; }
+        .conclusion-badge.fail { background: #f8d7da; color: #721c24; }
+
+        .summary-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+        }
+        .summary-box strong { color: #333; }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: #333;
+        }
+
+        .issue-list { list-style: none; }
+        .issue-item {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+        .issue-item .problem { color: #dc3545; font-weight: bold; font-size: 16px; margin-bottom: 6px; }
+        .issue-item .problem::before { content: "⚠️ "; }
+        .issue-item .suggestion { color: #28a745; font-size: 15px; }
+        .issue-item .suggestion::before { content: "💡 建议: "; }
+        .no-issues { color: #28a745; font-size: 16px; padding: 12px 0; }
+        .no-issues::before { content: "✅ 无问题"; }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; color: #999;
+        }
+        .empty-state .icon { font-size: 54px; margin-bottom: 14px; }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .left-panel { flex: 0 0 auto; max-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- <div class="header">
+        <h1>📋 材料评估结果</h1>
+        <div class="nav-links">
+            <a href="#" class="active">结果展示</a>
+            <a href="config_page.html">审核配置</a>
+        </div>
+    </div> -->
+
+    <div class="main-layout">
+        <!-- 左侧面板 -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <div class="title">章节目录</div>
+            </div>
+        <div class="download-bar">
+            <a href="javascript:void(0);" class="download-link" onclick="downloadOriginalFile()">
+                下载原文件
+            </a>
+            &nbsp;&nbsp;&nbsp;
+            <a href="javascript:void(0);" class="download-link" onclick="downloadResult()">
+                下载审核结果
+            </a>
+        </div>
+            <div class="chapter-directory" id="chapterDir"></div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="stats-bar" id="statsBar">
+                <span class="stat-item">总章节: <span class="stat-num" id="totalChapters">0</span></span>
+                <span class="stat-item">符合: <span class="stat-num pass" id="passCount">0</span></span>
+                <span class="stat-item">基本符合: <span class="stat-num partial" id="partialCount">0</span></span>
+                <span class="stat-item">不符合: <span class="stat-num fail" id="failCount">0</span></span>
+                <span class="stat-item">⚠️ 问题: <span class="stat-num" id="issueCount" style="color:#dc3545;">0</span></span>
+            </div>
+            <div class="right-body" id="detailArea">
+                <div id="chapterDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SAMPLE_DATA = {
+            "material_id": "MAT-TP-2024-001",
+            "file_name": "河南工业大学化学工程与工艺-2025版专业人才培养方案.pdf",
+            "chapters": [
+                {"chapter_name":"一、专业历史沿革和特色","conclusion":"符合","summary":"该章节清晰阐述了专业自1978年以来的发展历程，涵盖了从专科到本科、从校级重点到省级一流专业的建设脉络，特色优势突出。","issues":[]},
+                {"chapter_name":"二、培养目标","conclusion":"符合","summary":"培养目标明确，体现了德智体美劳全面发展要求，符合学校应用型人才培养定位。","issues":[]},
+                {"chapter_name":"三、毕业要求","conclusion":"基本符合","summary":"毕业要求从知识、能力、素质三个维度细化，共12条。但个别毕业要求表述偏笼统。","issues":[{"problem":"毕业要求8表述不够具体，缺少量化标准","suggestion":"建议增加具体的指标描述"},{"problem":"毕业要求11与培养目标4的对应关系不够清晰","suggestion":"建议补充毕业要求11对培养目标4的具体支撑说明"}]},
+                {"chapter_name":"四、毕业要求与培养目标的关联矩阵","conclusion":"不符合","summary":"关联矩阵中培养目标4没有任何毕业要求支撑。","issues":[{"problem":"培养目标4（实践创新能力）无对应毕业要求支撑","suggestion":"建议增加1-2条关于实践创新能力的毕业要求"}]},
+                {"chapter_name":"八、核心课程","conclusion":"符合","summary":"核心课程共8门，涵盖专业核心知识领域，门数合理（7~9门）；学分总和为23分，介于20~26之间。","issues":[]},
+                {"chapter_name":"七、毕业学分要求","conclusion":"不符合","summary":"计算规则「毕业总学分应≥160」: 实际值=155，目标值≥160，未通过。","issues":[{"problem":"未满足规则: 毕业总学分应≥160（实际=155）","suggestion":"建议增加选修课或实践环节学分"}]},
+                {"chapter_name":"九、课程设置结构比例表","conclusion":"不符合","summary":"专业选修课学分不足（18<20）。实践教学学分两表不一致。","issues":[{"problem":"专业选修课学分不足（实际18，需≥20）","suggestion":"增加专业选修课学分至20以上"},{"problem":"实践教学学分不一致（九表=28，十二表转换后=26.5）","suggestion":"核对实践教学学分计算口径"}]},
+                {"chapter_name":"十二、教学进程计划表","conclusion":"基本符合","summary":"教学进程安排基本合理，但第7学期课程门数偏少。","issues":[{"problem":"第7学期仅有2门课程，学期负荷不足","suggestion":"建议适当增加第7学期的课程安排"}]}
+            ]
+        };
+
+        let selectedIndex = 0;
+
+        function renderAll(data) {
+            const chapters = data.chapters || [];
+            if (chapters.length === 0) return;
+
+            const pass = chapters.filter(c => c.conclusion === '符合').length;
+            const partial = chapters.filter(c => c.conclusion === '基本符合').length;
+            const fail = chapters.filter(c => c.conclusion === '不符合').length;
+            const issues = chapters.reduce((s, c) => s + (c.issues ? c.issues.length : 0), 0);
+            document.getElementById("totalChapters").textContent = chapters.length;
+            document.getElementById("passCount").textContent = pass;
+            document.getElementById("partialCount").textContent = partial;
+            document.getElementById("failCount").textContent = fail;
+            document.getElementById("issueCount").textContent = issues;
+
+            renderDirectory(chapters);
+            showChapter(selectedIndex >= chapters.length ? 0 : selectedIndex);
+        }
+
+        function renderDirectory(chapters) {
+            const dir = document.getElementById("chapterDir");
+            dir.innerHTML = '';
+            chapters.forEach((ch, i) => {
+                const cls = ch.conclusion === '符合' ? 'pass' : (ch.conclusion === '基本符合' ? 'partial' : 'fail');
+                const item = document.createElement('div');
+                item.className = 'chapter-dir-item';
+                item.dataset.index = i;
+                item.innerHTML = `
+                    <span class="dir-name">${ch.chapter_name}</span>
+                    <span class="dir-badge ${cls}">${ch.conclusion}</span>
+                `;
+                item.onclick = function() { showChapter(i); };
+                dir.appendChild(item);
+            });
+        }
+
+        function showChapter(index) {
+            if (!SAMPLE_DATA.chapters || index >= SAMPLE_DATA.chapters.length) return;
+            selectedIndex = index;
+            const ch = SAMPLE_DATA.chapters[index];
+
+            document.querySelectorAll('.chapter-dir-item').forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+
+            const cls = ch.conclusion === '符合' ? 'pass' : (ch.conclusion === '基本符合' ? 'partial' : 'fail');
+            const hasIssues = ch.issues && ch.issues.length > 0;
+
+            document.getElementById("chapterDetails").innerHTML = `
+                <div class="chapter-detail active">
+                    <div class="detail-header">
+                        <h2>${ch.chapter_name}</h2>
+                        <span class="conclusion-badge ${cls}">${ch.conclusion}</span>
+                    </div>
+                    <div class="section-title">📝 总结</div>
+                    <div class="summary-box">${ch.summary || '无'}</div>
+                    <div class="section-title">📌 问题与改进建议</div>
+                    ${hasIssues ? `
+                        <ul class="issue-list">
+                            ${ch.issues.map(issue => `
+                                <li class="issue-item">
+                                    <div class="problem">${issue.problem || issue.问题 || ''}</div>
+                                    <div class="suggestion">${issue.suggestion || issue.改进建议 || ''}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : `<div class="no-issues"></div>`}
+                </div>
+            `;
+        }
+
+        function downloadResult() {
+            const blob = new Blob([JSON.stringify(SAMPLE_DATA, null, 2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'material_eval_result.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        renderAll(SAMPLE_DATA);
+    </script>
+</body>
+</html>

@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料评估审核配置</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 22px; }
+        .header .nav-links { display: flex; gap: 14px; }
+        .header .nav-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .header .nav-links a:hover, .header .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 14px 20px;
+            gap: 20px;
+            background: #f5f5f5;
+        }
+
+        /* 左侧 tab */
+        .left-panel {
+            flex: 0 0 220px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .left-panel .panel-header {
+            padding: 20px 20px 14px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .left-panel .panel-header .title { font-size: 18px; font-weight: bold; }
+        .tab-nav { flex: 1; padding: 10px 0; }
+
+        .tab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+            font-size: 15px;
+            color: #555;
+        }
+        .tab-item:hover { background: #f0f2ff; color: #333; }
+        .tab-item.active {
+            background: #eef0ff;
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .tab-item .icon { font-size: 20px; }
+        .tab-item .count {
+            font-size: 12px;
+            color: #999;
+            margin-left: auto;
+            padding: 2px 10px;
+            background: #eee;
+            border-radius: 12px;
+        }
+
+        /* 右侧面板 */
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 表格 */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .table-toolbar .title { font-weight: bold; font-size: 16px; }
+
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+        th, td {
+            padding: 13px 18px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: bold;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tbody tr:hover { background: #f8f9ff; }
+        tbody tr:nth-child(even) { background: #fafafa; }
+
+        .type-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .type-badge.text { background: #e8ecf7; color: #495057; }
+        .type-badge.table { background: #d4edda; color: #155724; }
+        .type-badge.calc { background: #cce5ff; color: #004085; }
+        .type-badge.text_analysis { background: #d4edda; color: #155724; }
+
+        .field-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .field-tag-sm {
+            background: #e8ecf7;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .action-btn {
+            padding: 0;
+            border: none;
+            background: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-right: 8px;
+            text-decoration: underline;
+        }
+        .action-btn.edit { color: #007bff; }
+        .action-btn.edit:hover { color: #0056b3; }
+        .action-btn.del { color: #dc3545; }
+        .action-btn.del:hover { color: #c82333; }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(102,126,234,0.4); }
+        .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; }
+        .btn-outline:hover { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+
+        .empty-hint { text-align: center; padding: 48px; color: #999; font-size: 15px; }
+
+        .json-preview {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            max-height: calc(100vh - 200px);
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 32px;
+            border-radius: 12px;
+            width: 760px;
+            max-width: 90vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content h3 { font-size: 20px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 2px solid #f0f0f0; }
+        .close-modal {
+            position: absolute;
+            right: 20px; top: 15px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close-modal:hover { color: #333; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 14px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .field-add-row { display: flex; gap: 8px; margin-top: 8px; }
+        .field-add-row input { flex: 1; padding: 7px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .field-add-row input:focus { outline: none; border-color: #667eea; }
+
+        .comp-section {
+            background: #f0f2ff;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+            display: none;
+        }
+        .comp-section.visible { display: block; }
+
+        .context-section {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            display: none;
+        }
+        .context-section.visible { display: block; }
+
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .left-panel { flex: 0 0 auto; }
+            .tab-nav { display: flex; overflow-x: auto; }
+            .tab-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+            .tab-item.active { border-bottom-color: #667eea; border-left-color: transparent; }
+            .modal-content { width: 95vw; margin: 5% auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- <div class="header">
+        <h1>⚙️ 材料评估审核配置</h1>
+        <div class="nav-links">
+            <a href="result_display.html">结果展示</a>
+            <a href="#" class="active">审核配置</a>
+        </div>
+    </div> -->
+
+    <div class="main-layout">
+        <!-- 左侧 tab -->
+        <div class="left-panel">
+            <div class="panel-header"><div class="title">审核配置</div></div>
+            <div class="tab-nav">
+                <div class="tab-item active" data-tab="chapters" onclick="switchTab('chapters')">
+                    <span class="icon"></span> 章节配置
+                    <span class="count" id="chCount">0</span>
+                </div>
+                <div class="tab-item" data-tab="rules" onclick="switchTab('rules')">
+                    <span class="icon"></span> 规则配置
+                    <span class="count" id="rlCount">0</span>
+                </div>
+                <div class="tab-item" data-tab="json" onclick="switchTab('json')">
+                    <span class="icon"></span> JSON 预览
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="right-body">
+                <!-- Tab: 章节 -->
+                <div class="tab-content active" id="tab-chapters">
+                    <div class="table-toolbar">
+                        <span class="title">章节列表</span>
+                        <button class="btn btn-primary" onclick="openChapterModal()">+ 添加章节</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;">序号</th>
+                                    <th style="width:340px;">章节名称</th>
+                                    <th style="width:90px;">存储类型</th>
+                                    <th>字段列表</th>
+                                    <th style="width:120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chapterTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-hint" id="chEmpty">暂无章节，点击「添加章节」开始配置</div>
+                </div>
+
+                <!-- Tab: 规则 -->
+                <div class="tab-content" id="tab-rules">
+                    <div class="table-toolbar">
+                        <span class="title">规则列表</span>
+                        <button class="btn btn-primary" onclick="openRuleModal()">+ 添加规则</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;">序号</th>
+                                    <th style="width:340px;">章节名称</th>
+                                    <th style="width:220px;">规则类型</th>
+                                    <th>规则描述</th>
+                                    <th style="width:120px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ruleTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-hint" id="rlEmpty">暂无规则，点击「添加规则」开始配置</div>
+                </div>
+
+                <!-- Tab: JSON -->
+                <div class="tab-content" id="tab-json">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <span style="font-weight:bold;font-size:15px;">📦 配置 JSON</span>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-outline" onclick="exportConfig()">💾 导出</button>
+                            <button class="btn btn-success" onclick="copyConfig()">📋 复制</button>
+                        </div>
+                    </div>
+                    <div class="json-preview" id="jsonPreview">{ "请先配置章节和规则" }</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节编辑弹窗 -->
+    <div class="modal" id="chapterModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('chapterModal')">&times;</span>
+            <h3 id="chapterModalTitle">添加章节</h3>
+            <input type="hidden" id="chapterEditIndex" value="-1">
+            <div class="form-row">
+                <div class="form-group" style="grid-column:span 2;">
+                    <label>章节名称 <span style="color:red;">*</span></label>
+                    <input type="text" id="chapName" placeholder="如: 一、专业历史沿革和特色">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>存储类型</label>
+                    <select id="chapStorageType" onchange="document.getElementById('chapFieldsSection').style.display=this.value==='table'?'block':'none';">
+                        <option value="text">文本 (text)</option>
+                        <option value="table">表格 (table)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" id="chapFieldsSection" style="display:none;">
+                <label>字段列表 <span style="color:#999;font-weight:normal;">(表格型必填)</span></label>
+                <div class="field-add-row">
+                    <input type="text" id="chapFieldInput" placeholder="输入字段名后按 Enter" onkeydown="if(event.key==='Enter'){addModalField();event.preventDefault();}">
+                    <button class="btn btn-primary btn-sm" onclick="addModalField()">添加</button>
+                </div>
+                <div id="chapFieldsList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('chapterModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveChapter()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规则编辑弹窗 -->
+    <div class="modal" id="ruleModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('ruleModal')">&times;</span>
+            <h3 id="ruleModalTitle">添加规则</h3>
+            <input type="hidden" id="ruleEditIndex" value="-1">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>关联章节 <span style="color:red;">*</span></label>
+                    <input type="text" id="ruleChapter" placeholder="章节名称" list="chDatalist">
+                </div>
+                <div class="form-group">
+                    <label>规则类型</label>
+                    <select id="ruleType" onchange="toggleRuleModalType()">
+                        <option value="text_analysis">文本分析</option>
+                        <option value="calculation">计算类</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>规则描述 <span style="color:red;">*</span></label>
+                <textarea id="ruleContent" rows="3" placeholder="描述评估规则..."></textarea>
+            </div>
+            <!-- 上下文章节 -->
+            <div class="context-section visible" id="ruleContextSection">
+                <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:4px;">联合评估章节 (context_chapters) <span style="color:#999;">可选</span></label>
+                <div class="field-add-row">
+                    <input type="text" id="ruleContextInput" placeholder="输入章节名后按 Enter" onkeydown="if(event.key==='Enter'){addModalContext();event.preventDefault();}">
+                    <button class="btn btn-primary btn-sm" onclick="addModalContext()">添加</button>
+                </div>
+                <div id="ruleContextList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+            </div>
+            <!-- 计算配置 -->
+            <div class="comp-section" id="ruleCompSection">
+                <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:8px;">计算配置</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>计算类型</label>
+                        <select id="compType" onchange="renderModalComp()">
+                            <option value="table_field_sum">table_field_sum - 筛选求和</option>
+                            <option value="direct_compare">direct_compare - 直接聚合</option>
+                            <option value="cross_chapter_compare">cross_chapter_compare - 跨章节对比</option>
+                            <option value="lookup_aggregate">lookup_aggregate - 跨表查找</option>
+                            <option value="custom_sql">custom_sql - 自定义SQL</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="compParams" style="margin-top:8px;"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('ruleModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveRule()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <datalist id="chDatalist"></datalist>
+
+    <script>
+        // ============================================================
+        // 数据
+        // ============================================================
+        let chapters = [];
+        let rules = [];
+
+        const SAMPLE_CHAPTERS = [
+            { name: "一、专业历史沿革和特色", storage_type: "text" },
+            { name: "二、培养目标", storage_type: "text" },
+            { name: "三、毕业要求", storage_type: "text" },
+            { name: "八、核心课程", storage_type: "table", fields: ["核心课程名称"] },
+            { name: "七、毕业学分要求", storage_type: "table", fields: ["课程模块", "学分", "学时"] },
+            { name: "九、课程设置结构比例表", storage_type: "table", fields: ["课程类别", "课程性质", "学分", "占总学分比例"] },
+            { name: "十二、教学进程计划表", storage_type: "table", fields: ["课程模块", "课程性质", "课程代码", "课程名称", "学分", "总计学时", "理论学时", "实验学时", "上机学时", "社会实践学时", "实训学时", "修读学期", "最低学分要求", "备注"] }
+        ];
+
+        const SAMPLE_RULES = [
+            { chapter_name: "一、专业历史沿革和特色", rule_type: "text_analysis", rule_content: "专业简介应包含专业历史沿革、特色优势、发展方向等内容" },
+            { chapter_name: "二、培养目标", rule_type: "text_analysis", rule_content: "培养目标应体现德智体美劳全面发展要求" },
+            { chapter_name: "三、毕业要求", rule_type: "text_analysis", rule_content: "根据专业培养目标对毕业要求进一步细化", context_chapters: ["二、培养目标"] },
+            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "专业核心课应控制在8门左右（7~9门）", computation: { type: "direct_compare", source_chapters: ["八、核心课程"], field: "核心课程名称", aggregation: "count", comparison: "range", min_value: 7, max_value: 9 } },
+            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "所有核心课程的学分总和应介于20~26学分", computation: { type: "lookup_aggregate", lookup_chapter: "八、核心课程", lookup_field: "核心课程名称", target_chapter: "十二、教学进程计划表", target_match_field: "课程名称", target_aggregate_field: "学分", aggregation: "sum", comparison: "range", min_value: 20, max_value: 26 } },
+            { chapter_name: "七、毕业学分要求", rule_type: "calculation", rule_content: "毕业总学分应≥160学分", computation: { type: "table_field_sum", source_chapters: ["七、毕业学分要求"], field: "学分", comparison: "gte", target_value: 160 } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "专业选修课学分总和应≥20学分", computation: { type: "table_field_sum", source_chapters: ["九、课程设置结构比例表"], filter: {field:"课程性质",value:"专业选修课"}, field: "学分", comparison: "gte", target_value: 20 } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "实践教学学分与教学进程计划表中实践学时对应学分应一致", computation: { type: "cross_chapter_compare", left: {chapter:"九、课程设置结构比例表",field:"学分",aggregation:"sum",filter:{field:"课程类别",value:"其中，实践教学学分占总学分比例①"}}, right: {chapter:"十二、教学进程计划表",row_transform:{type:"hours_to_credits",hours_fields:["实验学时","上机学时","社会实践学时","实训学时"],total_hours_field:"总计学时",credits_field:"学分"}}, comparison: "eq" } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "text_analysis", rule_content: "课程设置结构比例应合理，各类课程比例协调" },
+            { chapter_name: "十二、教学进程计划表", rule_type: "text_analysis", rule_content: "教学进程安排应合理，课程学期分布均衡" }
+        ];
+
+        // ============================================================
+        // Tab 切换
+        // ============================================================
+        function switchTab(name) {
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-'+name));
+        }
+
+        // ============================================================
+        // 渲染表格
+        // ============================================================
+        function renderChapters() {
+            const tbody = document.getElementById("chapterTableBody");
+            const empty = document.getElementById("chEmpty");
+            tbody.innerHTML = '';
+            if (chapters.length === 0) { empty.style.display = 'block'; } else { empty.style.display = 'none'; }
+            chapters.forEach((ch, i) => {
+                const tr = document.createElement('tr');
+                const st = ch.storage_type === 'table' ? '表格' : '文本';
+                const stCls = ch.storage_type === 'table' ? 'table' : 'text';
+                const fieldsHtml = ch.fields && ch.fields.length > 0
+                    ? `<div class="field-tags">${ch.fields.map(f => `<span class="field-tag-sm">${f}</span>`).join('')}</div>`
+                    : '<span style="color:#999;">-</span>';
+                tr.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>${ch.name}</td>
+                    <td><span class="type-badge ${stCls}">${st}</span></td>
+                    <td>${fieldsHtml}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="openChapterModal(${i})">编辑</button>
+                        <button class="action-btn del" onclick="delChapter(${i})">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById("chCount").textContent = chapters.length;
+            refreshJSON();
+        }
+
+        function renderRules() {
+            const tbody = document.getElementById("ruleTableBody");
+            const empty = document.getElementById("rlEmpty");
+            tbody.innerHTML = '';
+            if (rules.length === 0) { empty.style.display = 'block'; } else { empty.style.display = 'none'; }
+            rules.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                const rt = r.rule_type === 'calculation' ? '计算类' : '文本分析';
+                const rtCls = r.rule_type === 'calculation' ? 'calc' : 'text_analysis';
+                const desc = r.rule_content ? r.rule_content.substring(0, 60) + (r.rule_content.length > 12 ? '...' : '') : '-';
+                tr.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>${r.chapter_name}</td>
+                    <td><span class="type-badge ${rtCls}">${rt}</span></td>
+                    <td>${desc}</td>
+                    <td>
+                        <button class="action-btn edit" onclick="openRuleModal(${i})">编辑</button>
+                        <button class="action-btn del" onclick="delRule(${i})">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById("rlCount").textContent = rules.length;
+            refreshJSON();
+        }
+
+        // ============================================================
+        // 章节 CRUD
+        // ============================================================
+        function openChapterModal(index) {
+            document.getElementById("chapterModalTitle").textContent = index >= 0 ? '编辑章节' : '添加章节';
+            document.getElementById("chapterEditIndex").value = index >= 0 ? index : -1;
+            if (index >= 0) {
+                const ch = chapters[index];
+                document.getElementById("chapName").value = ch.name || '';
+                document.getElementById("chapStorageType").value = ch.storage_type || 'text';
+                document.getElementById("chapFieldsSection").style.display = ch.storage_type === 'table' ? 'block' : 'none';
+                const list = document.getElementById("chapFieldsList");
+                list.innerHTML = '';
+                if (ch.fields) ch.fields.forEach(f => list.appendChild(createModalFieldTag(f)));
+            } else {
+                document.getElementById("chapName").value = '';
+                document.getElementById("chapStorageType").value = 'text';
+                document.getElementById("chapFieldsSection").style.display = 'none';
+                document.getElementById("chapFieldsList").innerHTML = '';
+            }
+            document.getElementById("chapterModal").style.display = 'block';
+        }
+
+        function saveChapter() {
+            const name = document.getElementById("chapName").value.trim();
+            const st = document.getElementById("chapStorageType").value;
+            if (!name) { alert("请输入章节名称"); return; }
+            const fields = [];
+            document.querySelectorAll('#chapFieldsList .field-tag-sm').forEach(el => fields.push(el.textContent));
+            const ch = { name, storage_type: st };
+            if (st === 'table' && fields.length > 0) ch.fields = fields;
+            const idx = parseInt(document.getElementById("chapterEditIndex").value);
+            if (idx >= 0) { chapters[idx] = ch; } else { chapters.push(ch); }
+            closeModal('chapterModal');
+            renderChapters();
+            updateDatalist();
+        }
+
+        function delChapter(index) {
+            if (!confirm(`确定删除章节「${chapters[index].name}」？`)) return;
+            chapters.splice(index, 1);
+            renderChapters();
+            updateDatalist();
+        }
+
+        function addModalField() {
+            const input = document.getElementById("chapFieldInput");
+            const val = input.value.trim();
+            if (!val) return;
+            document.getElementById("chapFieldsList").appendChild(createModalFieldTag(val));
+            input.value = '';
+        }
+
+        function createModalFieldTag(text) {
+            const s = document.createElement('span');
+            s.className = 'field-tag-sm';
+            s.style.cssText = 'background:#e8ecf7;padding:3px 10px;border-radius:12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;';
+            s.innerHTML = `${text} <span style="cursor:pointer;color:#dc3545;font-weight:bold;" onclick="this.parentElement.remove()">&times;</span>`;
+            return s;
+        }
+
+        // ============================================================
+        // 规则 CRUD
+        // ============================================================
+        function openRuleModal(index) {
+            document.getElementById("ruleModalTitle").textContent = index >= 0 ? '编辑规则' : '添加规则';
+            document.getElementById("ruleEditIndex").value = index >= 0 ? index : -1;
+            document.getElementById("ruleContextList").innerHTML = '';
+            document.getElementById("compParams").innerHTML = '';
+
+            if (index >= 0) {
+                const r = rules[index];
+                document.getElementById("ruleChapter").value = r.chapter_name || '';
+                document.getElementById("ruleType").value = r.rule_type || 'text_analysis';
+                document.getElementById("ruleContent").value = r.rule_content || '';
+                toggleRuleModalType();
+                if (r.rule_type === 'text_analysis' && r.context_chapters) {
+                    r.context_chapters.forEach(ctx => {
+                        document.getElementById("ruleContextList").appendChild(createModalContextTag(ctx));
+                    });
+                }
+                if (r.rule_type === 'calculation' && r.computation) {
+                    const compType = r.computation.type || 'table_field_sum';
+                    document.getElementById("compType").value = compType;
+                    renderModalComp(r.computation);
+                }
+            } else {
+                document.getElementById("ruleChapter").value = '';
+                document.getElementById("ruleType").value = 'text_analysis';
+                document.getElementById("ruleContent").value = '';
+                toggleRuleModalType();
+                document.getElementById("compType").value = 'table_field_sum';
+                renderModalComp();
+            }
+            document.getElementById("ruleModal").style.display = 'block';
+        }
+
+        function saveRule() {
+            const chapterName = document.getElementById("ruleChapter").value.trim();
+            const ruleType = document.getElementById("ruleType").value;
+            const ruleContent = document.getElementById("ruleContent").value.trim();
+            if (!chapterName) { alert("请输入关联章节"); return; }
+            if (!ruleContent) { alert("请输入规则描述"); return; }
+            const rule = { chapter_name: chapterName, rule_type: ruleType, rule_content: ruleContent };
+            if (ruleType === 'text_analysis') {
+                const ctx = [];
+                document.querySelectorAll('#ruleContextList .field-tag-sm').forEach(el => ctx.push(el.textContent));
+                if (ctx.length > 0) rule.context_chapters = ctx;
+            }
+            if (ruleType === 'calculation') {
+                rule.computation = buildCompFromModal();
+            }
+            const idx = parseInt(document.getElementById("ruleEditIndex").value);
+            if (idx >= 0) { rules[idx] = rule; } else { rules.push(rule); }
+            closeModal('ruleModal');
+            renderRules();
+        }
+
+        function delRule(index) {
+            if (!confirm(`确定删除规则「${rules[index].rule_content.substring(0,20)}...」？`)) return;
+            rules.splice(index, 1);
+            renderRules();
+        }
+
+        function toggleRuleModalType() {
+            const isCalc = document.getElementById("ruleType").value === 'calculation';
+            document.getElementById("ruleContextSection").style.display = isCalc ? 'none' : 'block';
+            document.getElementById("ruleCompSection").style.display = isCalc ? 'block' : 'none';
+        }
+
+        function addModalContext() {
+            const input = document.getElementById("ruleContextInput");
+            const val = input.value.trim();
+            if (!val) return;
+            document.getElementById("ruleContextList").appendChild(createModalContextTag(val));
+            input.value = '';
+        }
+
+        function createModalContextTag(text) {
+            const s = document.createElement('span');
+            s.className = 'field-tag-sm';
+            s.style.cssText = 'background:white;padding:3px 10px;border-radius:12px;font-size:12px;border:1px solid #ffc107;display:inline-flex;align-items:center;gap:4px;';
+            s.innerHTML = `${text} <span style="cursor:pointer;color:#dc3545;font-weight:bold;" onclick="this.parentElement.remove()">&times;</span>`;
+            return s;
+        }
+
+        // ============================================================
+        // 计算配置（弹窗内）
+        // ============================================================
+        const COMP_TMPL = {
+            table_field_sum: [
+                {k:'source_chapters',l:'源章节(逗号分隔)',t:'text',p:'九、课程设置结构比例表'},
+                {k:'filter_field',l:'筛选字段(可选)',t:'text',p:'课程性质'},
+                {k:'filter_value',l:'筛选值(可选)',t:'text',p:'专业选修课'},
+                {k:'field',l:'求和字段',t:'text',p:'学分'},
+                {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','gt','lt','range']},
+                {k:'target_value',l:'目标值',t:'number',p:'20'},
+                {k:'min_value',l:'range下限',t:'number',p:'30'},
+                {k:'max_value',l:'range上限',t:'number',p:'50'}
+            ],
+            direct_compare: [
+                {k:'source_chapters',l:'源章节(逗号分隔)',t:'text',p:'八、核心课程'},
+                {k:'field',l:'统计字段',t:'text',p:'核心课程名称'},
+                {k:'aggregation',l:'聚合方式',t:'select',o:['count','sum','avg','max','min']},
+                {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','range']},
+                {k:'target_value',l:'目标值',t:'number',p:'8'},
+                {k:'min_value',l:'range下限',t:'number',p:'7'},
+                {k:'max_value',l:'range上限',t:'number',p:'9'}
+            ],
+            cross_chapter_compare: [
+                {k:'left_chapter',l:'左侧-章节',t:'text',p:'九、课程设置结构比例表'},
+                {k:'left_field',l:'左侧-字段',t:'text',p:'学分'},
+                {k:'left_aggregation',l:'左侧-聚合',t:'select',o:['sum','count','avg','max','min']},
+                {k:'right_chapter',l:'右侧-章节',t:'text',p:'十二、教学进程计划表'},
+                {k:'right_mode',l:'右侧模式',t:'select',o:['field','fields','hours_to_credits']},
+                {k:'right_field',l:'右侧-字段(单字段模式)',t:'text',p:'学分'},
+                {k:'right_fields',l:'右侧-多字段(逗号分隔)',t:'text',p:'实验学时,上机学时'},
+                {k:'right_hours',l:'学时转学分-学时字段(逗号分隔)',t:'text',p:'实验学时,上机学时,社会实践学时,实训学时'},
+                {k:'right_total_hours',l:'学时转学分-总计学时字段',t:'text',p:'总计学时'},
+                {k:'right_credits',l:'学时转学分-学分字段',t:'text',p:'学分'},
+                {k:'comparison',l:'比较方式',t:'select',o:['eq','neq','gte','lte']}
+            ],
+            lookup_aggregate: [
+                {k:'lookup_chapter',l:'源章节',t:'text',p:'八、核心课程'},
+                {k:'lookup_field',l:'源字段',t:'text',p:'核心课程名称'},
+                {k:'target_chapter',l:'目标章节',t:'text',p:'十二、教学进程计划表'},
+                {k:'target_match_field',l:'目标匹配字段',t:'text',p:'课程名称'},
+                {k:'target_aggregate_field',l:'目标聚合字段',t:'text',p:'学分'},
+                {k:'aggregation',l:'聚合方式',t:'select',o:['sum','count','avg','max','min']},
+                {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','range']},
+                {k:'target_value',l:'目标值',t:'number',p:'23'}
+            ],
+            custom_sql: [
+                {k:'sql_template',l:'SQL 语句',t:'textarea',p:'SELECT COUNT(*) FROM chapter_data WHERE chapter_name=? AND material_id=?'}
+            ]
+        };
+
+        function renderModalComp(values) {
+            const type = document.getElementById("compType").value;
+            const tmpl = COMP_TMPL[type];
+            const container = document.getElementById("compParams");
+            if (!tmpl) { container.innerHTML = ''; return; }
+            const v = (k) => { if (!values) return ''; const m = vmap(k, values); return m || ''; };
+            let html = '<div class="form-row" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">';
+            tmpl.forEach(f => {
+                html += `<div class="form-group"><label>${f.l}</label>`;
+                if (f.t === 'select') {
+                    html += `<select class="mcomp-${f.k}" onchange="">`;
+                    (f.o||[]).forEach(o => html += `<option value="${o}" ${v(f.k)===o?'selected':''}>${o}</option>`);
+                    html += '</select>';
+                } else if (f.t === 'textarea') {
+                    html += `<textarea class="mcomp-${f.k}" rows="2" placeholder="${f.p||''}">${v(f.k)||''}</textarea>`;
+                } else {
+                    html += `<input type="${f.t}" class="mcomp-${f.k}" value="${v(f.k)||''}" placeholder="${f.p||''}">`;
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function vmap(k, values) {
+            if (k === 'source_chapters' && values.source_chapters) return values.source_chapters.join(', ');
+            if (k === 'filter_field' && values.filter) return values.filter.field||'';
+            if (k === 'filter_value' && values.filter) return values.filter.value||'';
+            if (k === 'left_chapter' && values.left) return values.left.chapter||'';
+            if (k === 'left_field' && values.left) return values.left.field||'';
+            if (k === 'left_aggregation' && values.left) return values.left.aggregation||'';
+            if (k === 'right_chapter' && values.right) return values.right.chapter||'';
+            if (k === 'right_mode') {
+                if (values.right && values.right.row_transform) return 'hours_to_credits';
+                if (values.right && values.right.fields) return 'fields';
+                return 'field';
+            }
+            if (k === 'right_field' && values.right && !values.right.fields && !values.right.row_transform) return values.right.field||'';
+            if (k === 'right_fields' && values.right && values.right.fields) return values.right.fields.join(', ');
+            if (k === 'right_hours' && values.right && values.right.row_transform) return (values.right.row_transform.hours_fields||[]).join(', ');
+            if (k === 'right_total_hours' && values.right && values.right.row_transform) return values.right.row_transform.total_hours_field||'';
+            if (k === 'right_credits' && values.right && values.right.row_transform) return values.right.row_transform.credits_field||'';
+            const dir = {aggregation:'aggregation',comparison:'comparison',target_value:'target_value',min_value:'min_value',max_value:'max_value',lookup_chapter:'lookup_chapter',lookup_field:'lookup_field',target_chapter:'target_chapter',target_match_field:'target_match_field',target_aggregate_field:'target_aggregate_field',sql_template:'sql_template'};
+            const mk = dir[k];
+            return mk && values[mk] !== undefined ? String(values[mk]) : '';
+        }
+
+        function buildCompFromModal() {
+            const type = document.getElementById("compType").value;
+            const g = (k) => { const i = document.querySelector('.mcomp-'+k); return i ? i.value.trim() : ''; };
+            const comp = { type };
+            if (type === 'table_field_sum') {
+                const chs = g('source_chapters').split(',').map(s=>s.trim()).filter(Boolean);
+                if (chs.length) comp.source_chapters = chs;
+                const ff=g('filter_field'), fv=g('filter_value');
+                if (ff && fv) comp.filter = {field:ff, value:fv};
+                comp.field = g('field')||'学分';
+                comp.comparison = g('comparison');
+                if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
+                else {comp.target_value=parseFloat(g('target_value'))||0;}
+            } else if (type==='direct_compare') {
+                const chs=g('source_chapters').split(',').map(s=>s.trim()).filter(Boolean);
+                if (chs.length) comp.source_chapters=chs;
+                comp.field=g('field')||'核心课程名称'; comp.aggregation=g('aggregation')||'count';
+                comp.comparison=g('comparison');
+                if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
+                else {comp.target_value=parseFloat(g('target_value'))||0;}
+            } else if (type==='cross_chapter_compare') {
+                comp.left={chapter:g('left_chapter')||'',field:g('left_field')||'',aggregation:g('left_aggregation')||'sum'};
+                comp.right={chapter:g('right_chapter')||''};
+                const rm=g('right_mode');
+                if (rm==='hours_to_credits') {comp.right.row_transform={type:'hours_to_credits',hours_fields:g('right_hours').split(',').map(s=>s.trim()).filter(Boolean),total_hours_field:g('right_total_hours')||'总计学时',credits_field:g('right_credits')||'学分'};}
+                else if (rm==='fields') {comp.right.fields=g('right_fields').split(',').map(s=>s.trim()).filter(Boolean);}
+                else {comp.right.field=g('right_field')||'学分';}
+                comp.comparison=g('comparison')||'eq';
+            } else if (type==='lookup_aggregate') {
+                comp.lookup_chapter=g('lookup_chapter');comp.lookup_field=g('lookup_field');
+                comp.target_chapter=g('target_chapter');comp.target_match_field=g('target_match_field');
+                comp.target_aggregate_field=g('target_aggregate_field');
+                comp.aggregation=g('aggregation')||'sum';comp.comparison=g('comparison');
+                if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
+                else {comp.target_value=parseFloat(g('target_value'))||0;}
+            } else if (type==='custom_sql') {comp.sql_template=g('sql_template');}
+            return comp;
+        }
+
+        // ============================================================
+        // JSON 与导出
+        // ============================================================
+        function refreshJSON() {
+            const config = {
+                chapters: chapters,
+                rules: rules
+            };
+            document.getElementById('jsonPreview').textContent = JSON.stringify(config, null, 2);
+        }
+
+        function exportConfig() {
+            const c = {chapters, rules};
+            const b = new Blob([JSON.stringify(c, null, 2)], {type:'application/json'});
+            const u = URL.createObjectURL(b);
+            const a = document.createElement('a'); a.href=u; a.download='material_eval_config.json'; a.click();
+            URL.revokeObjectURL(u);
+        }
+
+        function copyConfig() {
+            navigator.clipboard.writeText(document.getElementById('jsonPreview').textContent).then(()=>alert('已复制'));
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function updateDatalist() {
+            const dl = document.getElementById('chDatalist');
+            dl.innerHTML = '';
+            chapters.forEach(ch => {
+                const o = document.createElement('option'); o.value = ch.name; dl.appendChild(o);
+            });
+        }
+
+        // ============================================================
+        // 初始化
+        // ============================================================
+        chapters = JSON.parse(JSON.stringify(SAMPLE_CHAPTERS));
+        rules = JSON.parse(JSON.stringify(SAMPLE_RULES));
+        renderChapters();
+        renderRules();
+        switchTab('chapters');
+        updateDatalist();
+    </script>
+</body>
+</html>
