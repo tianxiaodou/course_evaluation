@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>培养方案执行分析</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Microsoft YaHei','PingFang SC',Arial,sans-serif; background:#f5f7fb; color:#333; min-height:100vh; display:flex; flex-direction:column; zoom:1.5; }
+        /* 隐藏所有滚动条 */
+        ::-webkit-scrollbar { display:none; }
+        * { scrollbar-width:none; -ms-overflow-style:none; }
+        .header { background:#fff; border-bottom:1px solid #e8ecf1; padding:16px 28px; display:flex; align-items:center; flex-shrink:0; position:relative; justify-content:center; }
+        .header .time { position:absolute; right:28px; top:50%; transform:translateY(-50%); font-size:13px; color:#999; font-family:'Courier New',monospace; }
+        .mode-switcher { display:flex; background:#f0f2f5; border-radius:8px; padding:3px; gap:2px; }
+        .mode-switcher .mode-btn { padding:6px 16px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; color:#666; background:transparent; transition:all .2s; }
+        .mode-switcher .mode-btn.active { background:#fff; color:#667eea; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+        .tab-bar { background:#fff; padding:0 28px; border-bottom:1px solid #e8ecf1; display:flex; gap:0; flex-shrink:0; }
+        .tab-item { padding:12px 24px; cursor:pointer; font-size:14px; font-weight:600; color:#666; border-bottom:3px solid transparent; transition:all .2s; }
+        .tab-item:hover { color:#667eea; }
+        .tab-item.active { color:#667eea; border-bottom-color:#667eea; }
+        .content-wrap { flex:1; overflow:clip; padding:20px 28px; }
+        .tab-page { display:none; overflow-y:auto; height:100%; }
+        .tab-page.active { display:block; }
+        /* Tab2 固定顶部 + 下方滚动 */
+        #page-detail { display:none !important; flex-direction:column; height:100%; overflow:hidden; }
+        #page-detail.active { display:flex !important; }
+        .detail-scroll { flex:1; overflow-y:auto; min-height:0; }
+        .card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); padding:18px 22px; margin-bottom:18px; }
+        .card-title { font-size:15px; font-weight:600; color:#1a1a2e; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+        .card-title i { color:#667eea; width:18px; text-align:center; }
+
+        /* Tab1 */
+        .row2 { display:flex; gap:18px; height:calc(66.67vh - 100px); min-height:0; }
+        .row2-left { flex:0 0 58%; display:flex; flex-direction:column; }
+        .row2-left .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; }
+        .row2-left .card .dim-grid { overflow-y:auto; flex:1; }
+        .row2-right { flex:1; display:flex; flex-direction:column; }
+        .row2-right .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; }
+        .row2-right .card .rank-list { overflow-y:auto; flex:1; scrollbar-width:none; -ms-overflow-style:none; }
+        .row2-right .card .rank-list::-webkit-scrollbar { display:none; }
+
+        .quality-top { display:flex; gap:14px; margin-bottom:14px; flex-shrink:0; }
+        .quality-ring-card { flex:1; background:#f8f9fa; border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; }
+        .ring-chart { width:72px; height:72px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .ring-chart .inner { position:absolute; width:56px; height:56px; border-radius:50%; background:#f8f9fa; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#333; }
+        .ring-chart .inner.green { color:#28a745; } .ring-chart .inner.orange { color:#e67e22; } .ring-chart .inner.red { color:#dc3545; }
+        .quality-ring-card .rinfo { flex:1; }
+        .quality-ring-card .rinfo .rtitle { font-size:13px; color:#555; margin-bottom:4px; }
+        .quality-ring-card .rinfo .rtitle i { color:#667eea; margin-right:4px; }
+        .quality-ring-card .rinfo .rdesc { font-size:12px; color:#999; }
+
+        .desc-card { background:linear-gradient(135deg,#f0f2ff,#eef0ff); border-radius:10px; padding:14px 16px; border:1px solid #dde0ff; font-size:12px; line-height:1.8; color:#444; flex:1; }
+        .desc-card i { color:#667eea; margin-right:4px; }
+        .desc-card strong { color:#1a1a2e; }
+
+        .dim-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; align-items:start; }
+        .dim-card { border-radius:10px; padding:16px 8px; text-align:center; transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:76px; }
+        /* 执行分析模式用更高的卡片 */
+        .dim-card.exec-card { padding:24px 12px; text-align:center; transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:120px; }
+        .dim-card.green { background:#e8f5e9; border:1px solid #c8e6c9; }
+        .dim-card.orange { background:#fff3e0; border:1px solid #ffe0b2; }
+        .dim-card.red { background:#ffebee; border:1px solid #ffcdd2; animation:blinkBorder .8s ease-in-out infinite alternate; }
+        @keyframes blinkBorder { 0%{border-color:#ffcdd2} 100%{border-color:#dc3545} }
+        .dim-card .dpct { font-size:22px; font-weight:700; margin-bottom:2px; }
+        .dim-card .dpct.green { color:#2e7d32; } .dim-card .dpct.orange { color:#e65100; } .dim-card .dpct.red { color:#c62828; }
+        .dim-card .dlabel { font-size:11px; color:#555; margin-bottom:2px; }
+        .dim-card .dsub { font-size:11px; color:#999; text-align:right; }
+
+        .rank-list { }
+        .rank-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer; transition:all .15s; border-bottom:1px solid #f5f5f5; }
+        .rank-item:hover { background:#f0f2ff; }
+        .rank-item:last-child { border-bottom:none; }
+        .rank-item .rnum { width:24px; height:24px; border-radius:50%; background:#e8ecf7; color:#667eea; font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .rank-item .rnum.top1 { background:#667eea; color:#fff; }
+        .rank-item .rnum.top2 { background:#a78bfa; color:#fff; }
+        .rank-item .rnum.top3 { background:#c4b5fd; color:#fff; }
+        .rank-item .rname { flex:1; font-size:13px; color:#333; }
+        .rank-item .rcount { font-size:14px; font-weight:700; color:#dc3545; }
+        .rank-item .rtag { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:500; }
+        .rank-item .rtag.green { background:#d4edda; color:#155724; }
+        .rank-item .rtag.orange { background:#fff3cd; color:#856404; }
+        .rank-item .rtag.red { background:#f8d7da; color:#721c24; }
+
+        /* Tab2 专业明细 - 新布局 */
+        .detail-top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-shrink:0; }
+        .detail-top-bar .dname { font-size:18px; font-weight:700; }
+        .detail-top-bar .dname i { color:#667eea; margin-right:6px; }
+        .detail-top-bar .dname .tag { font-size:12px; padding:2px 10px; border-radius:8px; margin-left:8px; font-weight:500; }
+        .detail-top-bar .dname .tag.green { background:#d4edda; color:#155724; }
+        .detail-top-bar .dname .tag.orange { background:#fff3cd; color:#856404; }
+        .detail-top-bar .dname .tag.red { background:#f8d7da; color:#721c24; }
+        .detail-top-bar select { padding:6px 12px; border:2px solid #ddd; border-radius:6px; font-size:13px; outline:none; }
+        .detail-top-bar select:focus { border-color:#667eea; }
+
+        /* Tab2 6个维度卡片 - 带环形图 */
+        .dim6-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:18px; }
+        .dim6-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); padding:16px 12px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; }
+        .dim6-card .ring-sm { width:48px; height:48px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+        .dim6-card .ring-sm .inner-sm { position:absolute; width:36px; height:36px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+        .dim6-card .ring-sm .inner-sm.pass { color:#28a745; }
+        .dim6-card .ring-sm .inner-sm.fail { color:#dc3545; }
+        .dim6-card .d6label { font-size:11px; color:#555; line-height:1.3; }
+        .dim6-card .d6sub { font-size:10px; color:#999; }
+
+        .indicator-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .indicator-table th,.indicator-table td { padding:10px 14px; text-align:left; border-bottom:1px solid #f0f0f0; }
+        .indicator-table th { background:#f8f9fa; font-weight:600; color:#555; }
+        .indicator-table tr.diff { background:#fff5f5; }
+        .indicator-table .diff-val { color:#dc3545; font-weight:600; }
+        .indicator-table .plan { color:#667eea; font-weight:600; }
+        .indicator-table .actual { color:#28a745; font-weight:600; }
+        .indicator-table .actual.diff { color:#dc3545; }
+
+        .toggle-bar { display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:13px; color:#666; }
+        .toggle-bar .switch { position:relative; width:40px; height:22px; background:#ddd; border-radius:11px; cursor:pointer; transition:background .2s; flex-shrink:0; }
+        .toggle-bar .switch.on { background:#667eea; }
+        .toggle-bar .switch .knob { position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s; }
+        .toggle-bar .switch.on .knob { left:20px; }
+
+        .diff-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .diff-table th,.diff-table td { padding:9px 12px; text-align:left; border-bottom:1px solid #f0f0f0; }
+        .diff-table th { background:#f8f9fa; font-weight:600; color:#555; white-space:nowrap; }
+        .diff-table .tag-s { display:inline-block; padding:1px 10px; border-radius:8px; font-size:11px; font-weight:500; }
+        .diff-table .tag-s.match { background:#d4edda; color:#155724; }
+        .diff-table .tag-s.name_diff { background:#fff3cd; color:#856404; }
+        .diff-table .tag-s.sem_diff { background:#cce5ff; color:#004085; }
+        .diff-table .tag-s.credit_diff { background:#f8d7da; color:#721c24; }
+        .diff-table .tag-s.core_diff { background:#e8daef; color:#6c3483; }
+
+        .filter-row { display:flex; gap:10px; margin-bottom:10px; align-items:center; font-size:13px; }
+        .filter-row select { padding:5px 10px; border:2px solid #ddd; border-radius:6px; font-size:12px; outline:none; }
+        .filter-row select:focus { border-color:#667eea; }
+        .no-data { text-align:center; padding:30px; color:#999; font-size:13px; }
+
+        @media (max-width:1000px) { .row2,.quality-top { flex-direction:column; } .row2-left,.row2-right { flex:auto; } .dim-grid { grid-template-columns:repeat(2,1fr); } .dim6-row { grid-template-columns:repeat(3,1fr); } }
+
+        /* 制定分析 Tab2 结果展示布局 */
+        .fd-layout { display:flex; gap:18px; height:calc(66.67vh - 80px); min-height:300px; }
+        .fd-left { flex:0 0 220px; background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; overflow:hidden; }
+        .fd-left .fd-header { padding:14px 16px; font-weight:600; font-size:14px; border-bottom:1px solid #eee; }
+        .fd-left .fd-list { flex:1; overflow-y:auto; }
+        .fd-item { padding:10px 16px; cursor:pointer; font-size:13px; border-left:3px solid transparent; transition:all .15s; display:flex; align-items:center; gap:8px; }
+        .fd-item:hover { background:#f8f9ff; }
+        .fd-item.active { background:#eef0ff; border-left-color:#667eea; font-weight:600; }
+        .fd-item .fd-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .fd-item .fd-dot.green { background:#28a745; }
+        .fd-item .fd-dot.orange { background:#e67e22; }
+        .fd-item .fd-dot.red { background:#dc3545; }
+        .fd-right { flex:1; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
+        .fd-right .fd-summary { background:#f8f9fa; border-radius:8px; padding:14px 18px; font-size:13px; line-height:1.8; color:#555; }
+        .fd-right .fd-issue { border:1px solid #eee; border-radius:8px; padding:12px 16px; margin-bottom:8px; }
+        .fd-right .fd-issue .problem { color:#dc3545; font-weight:600; font-size:13px; }
+        .fd-right .fd-issue .suggestion { color:#28a745; font-size:12px; margin-top:4px; }
+        .fd-right .fd-conclusion { padding:4px 14px; border-radius:12px; font-size:14px; font-weight:bold; display:inline-block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('formulation')">培养方案制定分析</button>
+            <button class="mode-btn" onclick="switchMode('execution')">培养方案执行分析</button>
+        </div>
+        <div class="time" id="timeDisplay">—</div>
+    </div>
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="switchTab('overview',this)">学校整体概览</div>
+        <div class="tab-item" onclick="switchTab('detail',this)">各专业明细</div>
+    </div>
+    <div class="content-wrap">
+
+        <!-- Tab1 -->
+        <div class="tab-page active" id="page-overview">
+            <div class="row2">
+                <div class="row2-left">
+                    <div class="card" style="margin-bottom:0;height:100%;display:flex;flex-direction:column;">
+                        <div class="card-title"><i class="fas fa-gauge-high"></i>各维度执行合格率</div>
+                        <div class="quality-top" id="qualityTop"></div>
+                        <div class="dim-grid" id="dimGrid" style="overflow-y:auto;flex:1;"></div>
+                    </div>
+                </div>
+                <div class="row2-right">
+                    <div class="card" style="margin-bottom:0;height:100%;display:flex;flex-direction:column;">
+                        <div class="card-title"><i class="fa-solid fa-graduation-cap"></i>各专业执行情况</div>
+                        <div class="rank-list" id="rankList" style="overflow-y:auto;flex:1;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab2 -->
+        <div class="tab-page" id="page-detail">
+            <!-- 顶部选择栏（固定不滚动） -->
+            <div class="detail-top-bar">
+                <div class="dname" id="detailMajorName"><i class="fa-solid fa-graduation-cap"></i>化学工程与工艺 <span class="tag green" id="detailTag">一致</span></div>
+                <div style="display:flex;gap:12px;">
+                    <select id="majorSelectDetail" onchange="changeDetailMajor()">
+                        <option value="化学工程与工艺">化学工程与工艺</option>
+                    </select>
+                    <select id="gradeSelectDetail" onchange="changeDetailMajor()">
+                        <option>2024-2025 学年</option><option>2023-2024 学年</option>
+                    </select>
+                </div>
+            </div>
+            <!-- 可滚动内容区 -->
+            <div class="detail-scroll">
+                <div class="dim6-row" id="dim6Row"></div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-list-check"></i>课程明细差异清单</div>
+                    <div class="filter-row">
+                        <span>按状态筛选：</span>
+                        <select onchange="filterDiffTable(this)">
+                            <option value="all">全部</option><option value="一致">一致</option><option value="课程名称差异">课程名称差异</option><option value="开课年级差异">开课年级差异</option><option value="学分差异">学分差异</option><option value="核心课差异">核心课差异</option>
+                        </select>
+                        <span style="margin-left:auto;color:#666;font-size:12px;" id="diffSummary">总 0 门</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="diff-table" id="diffTable">
+                            <thead><tr><th>课程名称</th><th>课程类型</th><th>年级</th><th>方案学分</th><th>实际学分</th><th>方案核心课</th><th>实际核心课</th><th>比对状态</th></tr></thead>
+                            <tbody id="diffTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-balance-scale"></i>培养方案 vs 状态数据 指标比对</div>
+                    <div class="toggle-bar">
+                        <div class="switch" onclick="toggleDiff2()"><div class="knob"></div></div>
+                        <span>仅显示异常项</span>
+                        <span style="margin-left:auto;color:#dc3545;font-weight:600;" id="diffCountLabel"><i class="fas fa-exclamation-circle"></i> 共 0 项差异</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="indicator-table" id="indicatorTable2">
+                            <thead><tr><th style="min-width:140px;">指标</th><th style="width:120px;">培养方案制定值</th><th style="width:120px;">状态数据填报值</th><th style="width:80px;">差值</th></tr></thead>
+                            <tbody id="indicatorTbody2"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // 10个专业数据
+        // ============================================================
+        const ALL_MAJORS = ['化学工程与工艺','应用化学','材料科学与工程','食品科学与工程','机械设计制造及其自动化','计算机科学与技术','软件工程','土木工程','会计学','英语'];
+        const COLLEGES = {'化学工程与工艺':'化工学院','应用化学':'化工学院','材料科学与工程':'材料学院','食品科学与工程':'食品学院','机械设计制造及其自动化':'机械学院','计算机科学与技术':'计算机学院','软件工程':'计算机学院','土木工程':'土木学院','会计学':'管理学院','英语':'外语学院'};
+
+        const INDICATORS = ['总学时数','必修课学时','选修课学时','劳动教育学时','理论教学学时','实验教学学时','总学分数','公共必修课学分','公共选修课学分','专业必修课学分','专业选修课学分','理论教学学分','实验教学学分','创新创业教育学分','公共艺术课程学分'];
+        const INDICATOR_KEYS = ['total_hours','compulsory_hours','elective_hours','labor_edu_hours','theory_hours','lab_hours','total_credits','public_comp_credits','public_elective_credits','major_comp_credits','major_elective_credits','theory_credits','lab_credits','innovation_credits','art_credits'];
+
+        // 生成10个专业的方案数据
+        function genPlan(name, base) { return {...base}; }
+        function genStatus(name, base, tweaks) { return {...base, ...tweaks}; }
+
+        const PLAN_BASES = {
+            '化学工程与工艺':{total_hours:2816,compulsory_hours:1968,elective_hours:848,labor_edu_hours:32,theory_hours:2128,lab_hours:688,total_credits:165,public_comp_credits:38,public_elective_credits:8,major_comp_credits:85,major_elective_credits:20,theory_credits:125,lab_credits:24,innovation_credits:4,art_credits:2},
+            '应用化学':{total_hours:2752,compulsory_hours:1920,elective_hours:832,labor_edu_hours:32,theory_hours:2064,lab_hours:688,total_credits:162,public_comp_credits:38,public_elective_credits:8,major_comp_credits:82,major_elective_credits:18,theory_credits:120,lab_credits:24,innovation_credits:4,art_credits:2},
+            '材料科学与工程':{total_hours:2784,compulsory_hours:2016,elective_hours:768,labor_edu_hours:32,theory_hours:2080,lab_hours:704,total_credits:163,public_comp_credits:38,public_elective_credits:8,major_comp_credits:84,major_elective_credits:17,theory_credits:122,lab_credits:25,innovation_credits:4,art_credits:2},
+            '食品科学与工程':{total_hours:2688,compulsory_hours:1856,elective_hours:832,labor_edu_hours:32,theory_hours:2016,lab_hours:672,total_credits:160,public_comp_credits:38,public_elective_credits:8,major_comp_credits:80,major_elective_credits:18,theory_credits:118,lab_credits:22,innovation_credits:4,art_credits:2},
+            '机械设计制造及其自动化':{total_hours:2880,compulsory_hours:2080,elective_hours:800,labor_edu_hours:32,theory_hours:2128,lab_hours:752,total_credits:168,public_comp_credits:38,public_elective_credits:8,major_comp_credits:88,major_elective_credits:18,theory_credits:128,lab_credits:26,innovation_credits:4,art_credits:2},
+            '计算机科学与技术':{total_hours:2752,compulsory_hours:1936,elective_hours:816,labor_edu_hours:32,theory_hours:2096,lab_hours:656,total_credits:163,public_comp_credits:38,public_elective_credits:8,major_comp_credits:83,major_elective_credits:18,theory_credits:120,lab_credits:22,innovation_credits:4,art_credits:2},
+            '软件工程':{total_hours:2688,compulsory_hours:1872,elective_hours:816,labor_edu_hours:32,theory_hours:2016,lab_hours:672,total_credits:160,public_comp_credits:38,public_elective_credits:8,major_comp_credits:80,major_elective_credits:18,theory_credits:116,lab_credits:22,innovation_credits:4,art_credits:2},
+            '土木工程':{total_hours:2848,compulsory_hours:2016,elective_hours:832,labor_edu_hours:32,theory_hours:2128,lab_hours:720,total_credits:166,public_comp_credits:38,public_elective_credits:8,major_comp_credits:86,major_elective_credits:18,theory_credits:124,lab_credits:26,innovation_credits:4,art_credits:2},
+            '会计学':{total_hours:2624,compulsory_hours:1824,elective_hours:800,labor_edu_hours:32,theory_hours:2016,lab_hours:608,total_credits:158,public_comp_credits:38,public_elective_credits:8,major_comp_credits:78,major_elective_credits:18,theory_credits:120,lab_credits:16,innovation_credits:4,art_credits:2},
+            '英语':{total_hours:2560,compulsory_hours:1792,elective_hours:768,labor_edu_hours:32,theory_hours:2016,lab_hours:544,total_credits:155,public_comp_credits:38,public_elective_credits:8,major_comp_credits:75,major_elective_credits:18,theory_credits:118,lab_credits:14,innovation_credits:4,art_credits:2}
+        };
+
+        const STATUS_TWEAKS = {
+            '应用化学':{total_hours:2720,elective_hours:800,major_comp_credits:80,major_elective_credits:16,theory_credits:118,lab_credits:22},
+            '材料科学与工程':{total_hours:2800,elective_hours:784,lab_hours:720},
+            '食品科学与工程':{major_elective_credits:17,theory_credits:116,lab_credits:20},
+            '机械设计制造及其自动化':{total_hours:2896,elective_hours:816,major_comp_credits:86,theory_credits:126},
+            '软件工程':{elective_hours:800,major_elective_credits:16},
+            '土木工程':{total_hours:2864,elective_hours:848,major_elective_credits:19},
+            '会计学':{total_hours:2608,elective_hours:784},
+            '英语':{major_comp_credits:73,major_elective_credits:16,lab_credits:12}
+        };
+
+        const PLAN_DATA = {}, STATUS_66 = {};
+        ALL_MAJORS.forEach(m=>{
+            PLAN_DATA[m] = {...PLAN_BASES[m]};
+            STATUS_66[m] = {...PLAN_BASES[m], ...(STATUS_TWEAKS[m]||{})};
+        });
+
+        const MAJORS = ALL_MAJORS;
+
+        // 课程数据（10个专业）
+        function makeCourses(m,list){
+            const r={}; r[m]=list; return r;
+        }
+        const PLAN_COURSES = {
+            '化学工程与工艺':[{n:'化工原理',c:'专业必修课',cr:4,core:1,sem:3},{n:'化学反应工程',c:'专业必修课',cr:3,core:1,sem:5},{n:'化工热力学',c:'专业必修课',cr:3,core:1,sem:5},{n:'化工分离工程',c:'专业必修课',cr:2,core:0,sem:6},{n:'化工设计',c:'专业必修课',cr:3,core:0,sem:7},{n:'化工过程分析与合成',c:'专业必修课',cr:2,core:0,sem:6},{n:'精细化工工艺学',c:'专业选修课',cr:2,core:0,sem:6},{n:'化工安全与环保',c:'专业选修课',cr:2,core:0,sem:7},{n:'化工仪表与自动化',c:'专业选修课',cr:2,core:0,sem:5},{n:'化工技术经济',c:'专业选修课',cr:1,core:0,sem:7}],
+            '应用化学':[{n:'无机化学',c:'专业必修课',cr:4,core:1,sem:1},{n:'有机化学',c:'专业必修课',cr:4,core:1,sem:3},{n:'分析化学',c:'专业必修课',cr:3,core:1,sem:2},{n:'物理化学',c:'专业必修课',cr:4,core:1,sem:4},{n:'高分子化学',c:'专业必修课',cr:3,core:0,sem:5},{n:'有机合成化学',c:'专业选修课',cr:2,core:0,sem:6},{n:'波谱分析',c:'专业选修课',cr:2,core:0,sem:6},{n:'应用电化学',c:'专业选修课',cr:2,core:0,sem:7},{n:'绿色化学',c:'专业选修课',cr:1,core:0,sem:7}],
+            '材料科学与工程':[{n:'材料科学基础',c:'专业必修课',cr:4,core:1,sem:3},{n:'材料工程基础',c:'专业必修课',cr:3,core:1,sem:4},{n:'材料物理性能',c:'专业必修课',cr:3,core:1,sem:5},{n:'材料力学性能',c:'专业必修课',cr:3,core:0,sem:5},{n:'材料分析方法',c:'专业必修课',cr:3,core:1,sem:6},{n:'材料制备技术',c:'专业必修课',cr:2,core:0,sem:6},{n:'高分子材料',c:'专业选修课',cr:2,core:0,sem:6},{n:'复合材料学',c:'专业选修课',cr:2,core:0,sem:7},{n:'材料腐蚀与防护',c:'专业选修课',cr:2,core:0,sem:7}],
+            '食品科学与工程':[{n:'食品化学',c:'专业必修课',cr:3,core:1,sem:3},{n:'食品微生物学',c:'专业必修课',cr:3,core:1,sem:3},{n:'食品工程原理',c:'专业必修课',cr:3,core:1,sem:4},{n:'食品分析',c:'专业必修课',cr:2,core:0,sem:5},{n:'食品工艺学',c:'专业必修课',cr:3,core:1,sem:6},{n:'食品安全学',c:'专业选修课',cr:2,core:0,sem:6},{n:'食品营养学',c:'专业选修课',cr:2,core:0,sem:5},{n:'食品机械与设备',c:'专业选修课',cr:2,core:0,sem:6},{n:'食品工厂设计',c:'专业选修课',cr:1,core:0,sem:7}],
+            '机械设计制造及其自动化':[{n:'机械制图',c:'专业必修课',cr:4,core:1,sem:1},{n:'理论力学',c:'专业必修课',cr:3,core:1,sem:3},{n:'材料力学',c:'专业必修课',cr:3,core:1,sem:4},{n:'机械原理',c:'专业必修课',cr:3,core:1,sem:4},{n:'机械设计',c:'专业必修课',cr:3,core:1,sem:5},{n:'机械制造技术基础',c:'专业必修课',cr:3,core:0,sem:5},{n:'液压与气压传动',c:'专业选修课',cr:2,core:0,sem:6},{n:'机电传动控制',c:'专业选修课',cr:2,core:0,sem:6},{n:'数控技术',c:'专业选修课',cr:2,core:0,sem:6},{n:'机械CAD/CAM',c:'专业选修课',cr:2,core:0,sem:7}],
+            '计算机科学与技术':[{n:'程序设计基础',c:'专业必修课',cr:4,core:1,sem:1},{n:'数据结构',c:'专业必修课',cr:4,core:1,sem:3},{n:'操作系统',c:'专业必修课',cr:3,core:1,sem:4},{n:'计算机网络',c:'专业必修课',cr:3,core:1,sem:4},{n:'数据库系统',c:'专业必修课',cr:3,core:1,sem:5},{n:'软件工程',c:'专业必修课',cr:3,core:0,sem:5},{n:'人工智能',c:'专业选修课',cr:2,core:0,sem:6},{n:'机器学习',c:'专业选修课',cr:2,core:0,sem:6},{n:'计算机图形学',c:'专业选修课',cr:2,core:0,sem:7}],
+            '软件工程':[{n:'软件需求工程',c:'专业必修课',cr:3,core:1,sem:3},{n:'软件设计',c:'专业必修课',cr:3,core:1,sem:4},{n:'软件测试',c:'专业必修课',cr:2,core:0,sem:5},{n:'软件项目管理',c:'专业必修课',cr:2,core:0,sem:6},{n:'人机交互',c:'专业选修课',cr:2,core:0,sem:6},{n:'Web开发技术',c:'专业选修课',cr:2,core:0,sem:5},{n:'移动应用开发',c:'专业选修课',cr:2,core:0,sem:6}],
+            '土木工程':[{n:'土木工程材料',c:'专业必修课',cr:3,core:1,sem:3},{n:'结构力学',c:'专业必修课',cr:4,core:1,sem:4},{n:'混凝土结构',c:'专业必修课',cr:4,core:1,sem:5},{n:'钢结构',c:'专业必修课',cr:3,core:0,sem:6},{n:'土力学',c:'专业必修课',cr:3,core:0,sem:5},{n:'基础工程',c:'专业必修课',cr:2,core:0,sem:6},{n:'土木工程施工',c:'专业选修课',cr:2,core:0,sem:6},{n:'工程项目管理',c:'专业选修课',cr:2,core:0,sem:7}],
+            '会计学':[{n:'会计学原理',c:'专业必修课',cr:3,core:1,sem:1},{n:'中级财务会计',c:'专业必修课',cr:4,core:1,sem:3},{n:'高级财务会计',c:'专业必修课',cr:3,core:1,sem:5},{n:'成本会计',c:'专业必修课',cr:3,core:0,sem:4},{n:'审计学',c:'专业必修课',cr:3,core:1,sem:6},{n:'财务管理',c:'专业必修课',cr:3,core:0,sem:5},{n:'税法',c:'专业选修课',cr:2,core:0,sem:5},{n:'管理会计',c:'专业选修课',cr:2,core:0,sem:6}],
+            '英语':[{n:'综合英语',c:'专业必修课',cr:4,core:1,sem:1},{n:'英语听力',c:'专业必修课',cr:2,core:0,sem:1},{n:'英语口语',c:'专业必修课',cr:2,core:0,sem:2},{n:'英语阅读',c:'专业必修课',cr:2,core:0,sem:3},{n:'英语写作',c:'专业必修课',cr:2,core:0,sem:4},{n:'翻译理论与实践',c:'专业必修课',cr:3,core:1,sem:5},{n:'英美文学',c:'专业选修课',cr:2,core:0,sem:5},{n:'语言学概论',c:'专业选修课',cr:2,core:0,sem:6}]
+        };
+
+        const ACTUAL_COURSES = JSON.parse(JSON.stringify(PLAN_COURSES));
+        // 为部分专业添加差异数据
+        ACTUAL_COURSES['化学工程与工艺'].push({n:'新能源化工基础',c:'专业选修课',cr:2,g:'2024',core:0,sem:6});
+        // 制造差异数据：学分差异、核心课差异、开课年级差异
+        const cc = ACTUAL_COURSES['化学工程与工艺'];
+        if(cc.find(c=>c.n==='化工设计')) cc.find(c=>c.n==='化工设计').cr=2.5;
+        if(cc.find(c=>c.n==='化工分离工程')) cc.find(c=>c.n==='化工分离工程').core=1;
+        if(cc.find(c=>c.n==='化工技术经济')) cc.find(c=>c.n==='化工技术经济').sem=6;
+        ACTUAL_COURSES['食品科学与工程'].push({n:'功能性食品',c:'专业选修课',cr:2,g:'2024',core:0,sem:6});
+        ACTUAL_COURSES['软件工程']=[...ACTUAL_COURSES['软件工程'],{n:'云计算技术',c:'专业选修课',cr:2,g:'2024',core:0,sem:6}];
+        // 给部分课程打上年级
+        Object.keys(ACTUAL_COURSES).forEach(m=>{
+            ACTUAL_COURSES[m].forEach(c=>{if(!c.g)c.g='2024';});
+        });
+
+        let selectedMajor = '化学工程与工艺';
+        let showOnlyDiff2 = false;
+        let currentMode = 'formulation';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('onclick').includes(mode));
+            });
+            // 重新渲染当前 tab
+            const activeTab = document.querySelector('.tab-item.active');
+            if(activeTab) activeTab.click();
+        }
+
+        function switchTab(name, el) {
+            document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+            document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+            if(el) el.classList.add('active');
+            document.getElementById('page-'+name).classList.add('active');
+            if(name==='overview') renderOverview();
+            if(name==='detail') renderDetail(selectedMajor);
+        }
+
+        function getDiffCount(m){const p=PLAN_DATA[m],s=STATUS_66[m];if(!p||!s)return 0;let c=0;INDICATOR_KEYS.forEach(k=>{if(p[k]!==s[k])c++});return c;}
+        function hasMiss(m){return(PLAN_COURSES[m]||[]).some(pc=>!(ACTUAL_COURSES[m]||[]).find(c=>c.n===pc.n));}
+
+        // 6维度检查函数
+        function dimCheck(m){
+            const p=PLAN_COURSES[m]||[],a=ACTUAL_COURSES[m]||[];
+            return {
+                d1:p.reduce((s,x)=>s+x.cr,0)===a.reduce((s,x)=>s+x.cr,0),
+                d2:p.filter(x=>x.c==='专业必修课').reduce((s,x)=>s+x.cr,0)===a.filter(x=>x.c==='专业必修课').reduce((s,x)=>s+x.cr,0),
+                d3:p.filter(x=>x.c==='专业选修课').reduce((s,x)=>s+x.cr,0)===a.filter(x=>x.c==='专业选修课').reduce((s,x)=>s+x.cr,0),
+                d4:p.filter(x=>x.core).every(x=>a.find(c=>c.n===x.n)),
+                d5:p.every(x=>a.find(c=>c.n===x.n)),
+                d6:p.every(x=>{const f=a.find(c=>c.n===x.n);return f&&f.sem===x.sem;})
+            };
+        }
+
+        function calcDimensions(){
+            const labels=['专业课总学分一致性','专业必修课总学分一致性','专业选修课总学分一致性','核心课程一致性','专业课名称一致性','专业课开课学期一致性'];
+            const ds=[{pass:0,total:0},{pass:0,total:0},{pass:0,total:0},{pass:0,total:0},{pass:0,total:0},{pass:0,total:0}];
+            MAJORS.forEach(m=>{
+                const r=dimCheck(m);
+                [0,1,2,3,4,5].forEach(i=>{ds[i].total++;if(r['d'+(i+1)])ds[i].pass++;});
+            });
+            return ds.map((d,i)=>({...d,rate:Math.round(d.pass/d.total*100),label:labels[i]}));
+        }
+
+        // ============================================================
+        // Tab1 渲染
+        // ============================================================
+        function renderOverview() {
+            if(currentMode === 'formulation') { renderFormulationOverview(); return; }
+            // 重置卡片标题（避免从制定分析切换回来时标题不对）
+            document.querySelector('.row2-left .card-title').innerHTML = '<i class="fas fa-gauge-high"></i>各维度执行合格率';
+            document.querySelector('.row2-right .card-title').innerHTML = '<i class="fa-solid fa-graduation-cap"></i>各专业执行情况';
+            // 清理制定分析注入的额外内容
+            var dg = document.getElementById('dimGrid');
+            while(dg.nextSibling) dg.nextSibling.remove();
+            dg.style.gridTemplateColumns = 'repeat(3,1fr)';
+            const dims=calcDimensions();
+            const totalPass=dims.reduce((s,d)=>s+d.pass,0),totalCount=dims.reduce((s,d)=>s+d.total,0);
+            const overallRate=totalCount>0?Math.round(totalPass/totalCount*100):0;
+            const overallCls=overallRate>=90?'green':(overallRate>=70?'orange':'red');
+            const allDimPass=MAJORS.filter(m=>{const r=dimCheck(m);return Object.values(r).every(v=>v);}).length;
+            const sortedDims=[...dims].sort((a,b)=>a.rate-b.rate);
+            const worst=sortedDims[0];
+            const ringColor=overallRate>=90?'#28a745':(overallRate>=70?'#e67e22':'#dc3545');
+
+            document.getElementById('qualityTop').innerHTML=`
+                <div class="quality-ring-card">
+                    <div class="ring-chart" style="background:conic-gradient(${ringColor} 0deg ${overallRate*3.6}deg,#e9ecef ${overallRate*3.6}deg 360deg);">
+                        <div class="inner ${overallCls}">${overallRate}%</div>
+                    </div>
+                    <div class="rinfo">
+                        <div class="rtitle"><i class="fas fa-chart-line"></i>总体执行合格率</div>
+                        <div style="font-size:24px;font-weight:700;color:#333;">${overallRate}%</div>
+                        <div class="rdesc">${MAJORS.length}个专业中 ${allDimPass}个专业全部维度合格</div>
+                    </div>
+                </div>
+                <div class="desc-card" style="flex:1;">
+                    <i class="fas fa-info-circle"></i> <strong>培养方案执行分析说明：</strong><br>
+                    根据学科专业数据中 表7-5 专业课教学实施情况 作为培养方案的执行数据，
+                    与各专业制定的培养方案中的专业课情况进行比对分析。<strong>百分数代表执行与方案一致的专业占全部专业的比例。</strong>
+                </div>
+            `;
+
+            document.getElementById('dimGrid').innerHTML = dims.map((d,i)=>{
+                const cls=d.rate>=90?'green':(d.rate>=70?'orange':'red');
+                return `<div class="dim-card ${cls} exec-card"><div class="dpct ${cls}">${d.rate}%</div><div class="dlabel">${d.label}</div><div class="dsub">${d.pass}/${d.total}</div></div>`;
+            }).join('');
+            document.getElementById('dimGrid').style.rowGap = '0px';
+            document.getElementById('dimGrid').style.columnGap = '20px';
+
+            const rank=[];
+            MAJORS.forEach(m=>{
+                const d=getDiffCount(m);const miss=hasMiss(m);
+                let tag='green',tlabel='一致';
+                if(d>0&&miss){tag='red';tlabel='执行缺失';}else if(d>0){tag='orange';tlabel='结构偏离';}
+                rank.push({m,cnt:d,tag,tlabel});
+            });
+            rank.sort((a,b)=>b.cnt-a.cnt);
+            document.getElementById('rankList').innerHTML=rank.map((r,i)=>{
+                const cls=i===0?'top1':(i===1?'top2':(i===2?'top3':''));
+                return `<div class="rank-item" onclick="goToMajor('${r.m}')">
+                    <span class="rnum ${cls}">${i+1}</span><span class="rname">${r.m}</span>
+                    <span class="rtag ${r.tag}">${r.tlabel}</span><span class="rcount">${r.cnt}</span>
+                </div>`;
+            }).join('')||'<div style="padding:16px;color:#999;text-align:center;"><i class="fas fa-check-circle" style="color:#28a745;font-size:20px;display:block;margin-bottom:4px;"></i>所有专业完全一致</div>';
+        }
+
+        function goToMajor(name) {
+            selectedMajor=name;
+            document.querySelectorAll('.tab-item').forEach((t,i)=>{t.classList.toggle('active',i===1);});
+            document.querySelectorAll('.tab-page').forEach((p,i)=>{p.classList.toggle('active',i===1);});
+            renderDetail(name);
+        }
+
+        // ============================================================
+        // Tab2 渲染
+        // ============================================================
+        function changeDetailMajor() {
+            selectedMajor = document.getElementById('majorSelectDetail').value;
+            renderDetail(selectedMajor);
+        }
+
+        function renderDetail(major) {
+            if(currentMode === 'formulation') { renderFormulationDetail(major); return; }
+            // 恢复被制定分析隐藏的卡片和 dim6Row 布局
+            document.querySelectorAll('.detail-scroll > .card').forEach(c => c.style.display = '');
+            document.getElementById('dim6Row').style.display = 'grid';
+            // 更新选择框
+            const sel = document.getElementById('majorSelectDetail');
+            const cur = sel.value;
+            sel.innerHTML = MAJORS.map(m => `<option value="${m}" ${m===major?'selected':''}>${m}</option>`).join('');
+
+            const p=PLAN_DATA[major],s=STATUS_66[major];
+            if(!p||!s)return;
+
+            const dc=getDiffCount(major);
+            const miss=hasMiss(major);
+            let tag='green',tlabel='一致';
+            if(dc>0&&miss){tag='red';tlabel='执行缺失';}else if(dc>0){tag='orange';tlabel='结构偏离';}
+
+            // 更新顶部 — 注意保留 id="detailTag" && description
+            const descText = '百分数代表执行与方案一致的课程占该类型全部课程的比例';
+            document.getElementById('detailMajorName').innerHTML = `<i class="fa-solid fa-graduation-cap"></i>${major} <span class="tag ${tag}" id="detailTag" title="${descText}">${tlabel}</span> <span style="font-size:12px;color:#999;font-weight:400;">(${descText})</span>`;
+
+            // 6个维度环形卡片（固定演示数据）
+            const dmLabels = ['专业课总学分一致性','专业必修课总学分一致性','专业选修课总学分一致性','核心课程一致性','专业课名称一致性','专业课开课学期一致性'];
+            const dimDemoData = [
+                { pct:80, sub:'方案学分' + (PLAN_COURSES[major]||[]).reduce((s,x)=>s+x.cr,0) + '/实际' + (ACTUAL_COURSES[major]||[]).reduce((s,x)=>s+x.cr,0) },
+                { pct:100, sub:'完全一致' },
+                { pct:60, sub:'方案18/实际16' },
+                { pct:75, sub:'6门核心课5门开课' },
+                { pct:90, sub:'10门匹配/11门总课程' },
+                { pct:70, sub:'7门一致/10门总课程' }
+            ];
+            const dim6Html = [0,1,2,3,4,5].map(i=>{
+                const d = dimDemoData[i];
+                const color = d.pct>=90 ? '#28a745' : (d.pct>=70 ? '#e67e22' : '#dc3545');
+                const innerCls = d.pct>=90 ? 'pass' : (d.pct>=70 ? 'pass' : 'fail');
+                return `<div class="dim6-card">
+                    <div class="ring-sm" style="background:conic-gradient(${color} 0deg ${d.pct*3.6}deg,#e9ecef ${d.pct*3.6}deg 360deg);">
+                        <div class="inner-sm ${innerCls}">${d.pct}%</div>
+                    </div>
+                    <div class="d6label">${dmLabels[i]}</div>
+                    <div class="d6sub">${d.sub}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('dim6Row').innerHTML = dim6Html;
+
+            // 指标比对
+            let dc2=0,irows='';
+            INDICATOR_KEYS.forEach((k,i)=>{
+                const d=p[k]!==s[k];if(d)dc2++;
+                const dv=s[k]-p[k];const ds=dv>0?'+'+dv:dv<0?String(dv):'';
+                irows+=`<tr class="${d?'diff':''}" data-diff="${d?'1':'0'}"><td>${INDICATORS[i]}</td><td class="plan">${p[k]}</td><td class="actual ${d?'diff':''}">${s[k]}</td><td>${d?`<span class="diff-val">${ds}</span>`:'—'}</td></tr>`;
+            });
+            document.getElementById('indicatorTbody2').innerHTML = irows;
+            document.getElementById('diffCountLabel').innerHTML = `<i class="fas fa-exclamation-circle"></i> 共 ${dc2} 项差异`;
+            showOnlyDiff2 = false;
+            document.querySelector('#page-detail .switch').classList.remove('on');
+
+            // 课程明细 — 新状态：一致/课程名称差异/学分差异/核心课差异/开课年级差异
+            const pc=PLAN_COURSES[major]||[],ac=ACTUAL_COURSES[major]||[];
+            const an=new Set();
+            pc.forEach(x=>an.add(x.n));ac.forEach(x=>an.add(x.n));
+            let dr='',mc=0,nc=0,credD=0,coreD=0,semD=0;
+            an.forEach(n=>{
+                const pcm=pc.find(x=>x.n===n),acm=ac.find(x=>x.n===n);
+                let st='',cl='';
+                if(!pcm||!acm){st='课程名称差异';cl='name_diff';nc++;}
+                else if(pcm.cr!==acm.cr){st='学分差异';cl='credit_diff';credD++;}
+                else if(pcm.core!==acm.core){st='核心课差异';cl='core_diff';coreD++;}
+                else if(pcm.sem!==acm.sem){st='开课年级差异';cl='sem_diff';semD++;}
+                else{st='一致';cl='match';mc++;}
+                dr+=`<tr><td>${n}</td><td>${pcm?pcm.c:acm.c}</td><td>${acm?acm.g:'—'}</td><td>${pcm?pcm.cr:'—'}</td><td>${acm?acm.cr:'—'}</td><td>${pcm?(pcm.core?'是':'否'):'—'}</td><td>${acm?(acm.core?'是':'否'):'—'}</td><td><span class="tag-s ${cl}">${st}</span></td></tr>`;
+            });
+            document.getElementById('diffTbody').innerHTML = dr;
+            document.getElementById('diffSummary').innerHTML = `总 ${an.size} 门 | 一致 ${mc} | 课程名称差异 ${nc} | 开课年级差异 ${semD} | 学分差异 ${credD} | 核心课差异 ${coreD}`;
+        }
+
+        function toggleDiff2(){
+            showOnlyDiff2=!showOnlyDiff2;
+            document.querySelector('#page-detail .switch').classList.toggle('on');
+            document.querySelectorAll('#indicatorTable2 tbody tr').forEach(r=>{
+                if(showOnlyDiff2) r.style.display=r.dataset.diff==='1'?'':'none';else r.style.display='';
+            });
+        }
+
+        function filterDiffTable(sel){
+            const v=sel.value;
+            document.querySelectorAll('#diffTable tbody tr').forEach(r=>{
+                const st=r.querySelector('.tag-s');if(!st)return;
+                r.style.display=(v==='all'||st.textContent===v)?'':'none';
+            });
+        }
+
+        function updateTime(){document.getElementById('timeDisplay').textContent=new Date().toLocaleString('zh-CN',{hour12:false})}
+
+        // ============================================================
+        // 培养方案制定分析
+        // ============================================================
+        const FORMULATION_DIMS = ['专业发展简介合格率','培养目标合格率','毕业要求合格率','毕业要求与培养目标关联矩阵合格率','毕业学分要求合格率','核心课程合格率','课程设置结构合格率','课程与毕业要求的对应关系矩阵合格率'];
+        // 示例数据：各维度合格率
+        const FORM_DIM_DATA = [85,72,78,65,90,70,68,60];
+        // 问题规则列表
+        const FORM_RULES = [
+            { n:'理工科实践教学累计学分占总学分比例不少于25%', r:65 },
+            { n:'专业选修课学分总和应≥20学分', r:58 },
+            { n:'核心课程学分总和应介于20~26学分', r:52 },
+            { n:'课程设置结构比例应合理各类课程比例协调', r:45 },
+            { n:'毕业要求应实现对培养目标的支撑', r:40 },
+            { n:'通识教育课程学分应介于30~50学分', r:38 }
+        ];
+
+        function renderFormulationOverview() {
+            // 先清理之前注入的额外内容
+            var oldRules = document.getElementById('formRulesArea');
+            if(oldRules) oldRules.remove();
+            // 左侧：各维度制定合格率(4x2) + 问题规则列表(下方)
+            const leftHtml = FORMULATION_DIMS.map((label,i)=>{
+                const v = FORM_DIM_DATA[i];
+                const cls = v>=90?'green':(v>=70?'orange':'red');
+                return `<div class="dim-card ${cls}"><div class="dpct ${cls}">${v}%</div><div class="dlabel">${label}</div></div>`;
+            }).join('');
+            document.querySelector('.row2-left .card-title').innerHTML = '<i class="fas fa-gauge-high"></i>各维度制定合格率 <span style="font-size:12px;color:#999;font-weight:400;">（百分数代表人才培养方案完全符合的专业占全部专业的比例）</span>';
+            document.getElementById('qualityTop').innerHTML = '';
+            document.getElementById('dimGrid').style.gridTemplateColumns = 'repeat(4,1fr)';
+            document.getElementById('dimGrid').style.rowGap = '';
+            document.getElementById('dimGrid').innerHTML = leftHtml;
+            document.getElementById('dimGrid').style.minHeight = '140px';
+            // 在 dimGrid 下方追加问题规则列表（标题固定 + 列表滚动）
+            const ruleHtml = FORM_RULES.map((r,i)=>{
+                    const cls = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
+                    return `<div class="rank-item" style="cursor:default;padding:7px 4px;">
+                        <span class="rnum ${cls}">${i+1}</span>
+                        <span class="rname" style="font-size:12px;">${r.n}</span>
+                        <span class="rcount" style="font-size:13px;">${r.r}%</span>
+                    </div>`;
+                }).join('');
+            document.getElementById('dimGrid').insertAdjacentHTML('afterend', '<div id="formRulesArea" style="flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;"><div style="border-top:1px solid #eee;margin:8px 0 4px;"></div><div class="group-title" style="padding:6px 4px;font-size:12px;color:#666;flex-shrink:0;"><i class="fas fa-exclamation-triangle" style="color:#e67e22;margin-right:4px;"></i>问题率最多的规则列表</div><div style="overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;max-height:200px;">'+ruleHtml+'</div></div>');
+
+            // 右侧：仅各专业制定情况
+            document.querySelector('.row2-right .card-title').innerHTML = '<i class="fa-solid fa-graduation-cap"></i>各专业制定情况';
+            const majorsWithIssues = MAJORS.map(m=>({m, cnt:10-Math.floor(Math.random()*5)})).sort((a,b)=>b.cnt-a.cnt);
+            document.getElementById('rankList').innerHTML = majorsWithIssues.map((r,i)=>{
+                const cls = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
+                return `<div class="rank-item" onclick="goToMajor('${r.m}')">
+                    <span class="rnum ${cls}">${i+1}</span>
+                    <span class="rname">${r.m}</span>
+                    <span class="rcount" style="color:#e67e22;">${r.cnt}</span>
+                </div>`;
+            }).join('');
+        }
+
+        var fdSelected = 0;
+        var FD_CHAPTERS = [];
+
+        function renderFormulationDetail(major) {
+            var pc = 7;
+            document.getElementById('detailMajorName').innerHTML = `<i class="fa-solid fa-graduation-cap"></i>${major} <span class="tag green" id="detailTag">问题数：${pc}</span>`;
+            FD_CHAPTERS = FORMULATION_DIMS.map((label,i)=>{
+                const v = FORM_DIM_DATA[i];
+                const cls = v>=90?'符合':(v>=60?'基本符合':'不符合');
+                return { chapter_name:label, conclusion:cls, summary:label+'评审：'+(v>=90?'内容完整规范，符合要求':(v>=60?'基本满足要求，部分内容需完善':'存在较多问题，需重点关注'))+'。', issues: v>=90?[]:[{problem:label+'内容有待完善',suggestion:'建议参考学校模板进行补充修改'}] };
+            });
+            renderFD();
+            // 清空并隐藏下方不需要的区域
+            document.getElementById('diffTbody').innerHTML = '';
+            document.getElementById('diffSummary').innerHTML = '';
+            document.getElementById('indicatorTbody2').innerHTML = '';
+            document.getElementById('diffCountLabel').innerHTML = '';
+            document.querySelectorAll('.detail-scroll > .card').forEach(c => c.style.display = 'none');
+            // fd-layout 扩展到最右侧
+        }
+
+        function renderFD() {
+            const html = '<div class="fd-layout"><div class="fd-left"><div class="fd-header">评估章节</div><div class="fd-list" id="fdList">'+ 
+                FD_CHAPTERS.map((ch,i)=>{
+                    const cls = ch.conclusion==='符合'?'green':(ch.conclusion==='基本符合'?'orange':'red');
+                    return '<div class="fd-item '+(i===fdSelected?'active':'')+'" onclick="selectFD('+i+')"><span class="fd-dot '+cls+'"></span>'+ch.chapter_name+'<span style="font-size:11px;color:#999;margin-left:auto;">'+ch.conclusion+'</span></div>';
+                }).join('') + '</div></div><div class="fd-right" id="fdRight"></div></div>';
+            document.getElementById('dim6Row').innerHTML = html;
+            // dim6Row 在制定分析时不使用 grid 布局
+            document.getElementById('dim6Row').style.display = 'block';
+            // 清空下方
+            document.getElementById('diffTbody').innerHTML = '';
+            document.getElementById('diffSummary').innerHTML = '';
+            document.getElementById('indicatorTbody2').innerHTML = '';
+            document.getElementById('diffCountLabel').innerHTML = '';
+            showFDDetail();
+        }
+
+        function selectFD(i) { fdSelected=i; document.querySelectorAll('#fdList .fd-item').forEach((e,j)=>e.classList.toggle('active',j===i)); showFDDetail(); }
+
+        function showFDDetail() {
+            const ch = FD_CHAPTERS[fdSelected];
+            const cls = ch.conclusion;
+            // 去掉章节名中的＂合格率＂后缀
+            var showName = ch.chapter_name.replace('合格率','');
+            document.getElementById('fdRight').innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);padding:18px 22px;">'+
+                '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><strong style="font-size:15px;">'+showName+'</strong><span class="fd-conclusion" style="background:'+(cls==='符合'?'#d4edda':(cls==='基本符合'?'#fff3cd':'#f8d7da'))+';color:'+(cls==='符合'?'#155724':(cls==='基本符合'?'#856404':'#721c24'))+';">'+cls+'</span></div>'+
+                '<div class="fd-summary"><strong>总结：</strong>'+ch.summary+'</div>'+
+                (ch.issues.length?'<div style="margin-top:14px;"><strong style="font-size:13px;">问题与改进建议：</strong></div>'+ch.issues.map(iss=>'<div class="fd-issue"><div class="problem">'+iss.problem+'</div><div class="suggestion">'+iss.suggestion+'</div></div>').join(''):'<div style="color:#28a745;font-size:13px;margin-top:10px;">无问题</div>')+
+            '</div>';
+        }
+        setInterval(updateTime,1000);updateTime();
+        renderOverview();
+
+        // 初始化 Tab2 选择框并渲染第一个专业
+        document.getElementById('majorSelectDetail').innerHTML = MAJORS.map(m => `<option value="${m}">${m}</option>`).join('');
+        renderDetail(selectedMajor);
+    </script>
+</body>
+</html>
