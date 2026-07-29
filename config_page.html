@@ -52,53 +52,7 @@
             background: #f5f5f5;
         }
 
-        /* 左侧 tab */
-        .left-panel {
-            flex: 0 0 220px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .left-panel .panel-header {
-            padding: 20px 20px 14px;
-            border-bottom: 1px solid #eee;
-            flex-shrink: 0;
-        }
-        .left-panel .panel-header .title { font-size: 18px; font-weight: bold; }
-        .tab-nav { flex: 1; padding: 10px 0; }
-
-        .tab-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            cursor: pointer;
-            transition: all 0.15s;
-            border-left: 3px solid transparent;
-            font-size: 15px;
-            color: #555;
-        }
-        .tab-item:hover { background: #f0f2ff; color: #333; }
-        .tab-item.active {
-            background: #eef0ff;
-            border-left-color: #667eea;
-            color: #667eea;
-            font-weight: bold;
-        }
-        .tab-item .icon { font-size: 20px; }
-        .tab-item .count {
-            font-size: 12px;
-            color: #999;
-            margin-left: auto;
-            padding: 2px 10px;
-            background: #eee;
-            border-radius: 12px;
-        }
-
-        /* 右侧面板 */
+        /* 右侧面板 - 全宽 */
         .right-panel {
             flex: 1;
             background: white;
@@ -115,15 +69,18 @@
             padding: 24px 28px;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* 页面视图 */
+        .page-view { display: none; }
+        .page-view.active { display: block; }
 
-        /* 表格 */
+        /* 表格工具栏 */
         .table-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .table-toolbar .title { font-weight: bold; font-size: 16px; }
 
@@ -184,6 +141,8 @@
         .action-btn.edit:hover { color: #0056b3; }
         .action-btn.del { color: #dc3545; }
         .action-btn.del:hover { color: #c82333; }
+        .action-btn.rule-config { color: #28a745; }
+        .action-btn.rule-config:hover { color: #1e7e34; }
 
         .btn {
             padding: 8px 16px;
@@ -201,22 +160,12 @@
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(102,126,234,0.4); }
         .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; }
         .btn-outline:hover { background: #667eea; color: white; }
+        .btn-secondary { background: white; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #f5f5f5; }
         .btn-success { background: #28a745; color: white; }
         .btn-success:hover { background: #218838; }
 
         .empty-hint { text-align: center; padding: 48px; color: #999; font-size: 15px; }
-
-        .json-preview {
-            background: #2d2d2d;
-            color: #f8f8f2;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 14px;
-            max-height: calc(100vh - 200px);
-            overflow: auto;
-            white-space: pre-wrap;
-        }
 
         /* 模态框 */
         .modal {
@@ -308,12 +257,25 @@
         }
         .context-section.visible { display: block; }
 
+        /* JSON 弹窗用大框 */
+        .json-modal-content {
+            width: 900px;
+            max-width: 92vw;
+        }
+        .json-preview {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 55vh;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
         @media (max-width: 768px) {
-            .main-layout { flex-direction: column; }
-            .left-panel { flex: 0 0 auto; }
-            .tab-nav { display: flex; overflow-x: auto; }
-            .tab-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-            .tab-item.active { border-bottom-color: #667eea; border-left-color: transparent; }
+            .main-layout { padding: 8px; gap: 10px; }
             .modal-content { width: 95vw; margin: 5% auto; }
         }
     </style>
@@ -328,32 +290,19 @@
     </div> -->
 
     <div class="main-layout">
-        <!-- 左侧 tab -->
-        <div class="left-panel">
-            <div class="panel-header"><div class="title">审核配置</div></div>
-            <div class="tab-nav">
-                <div class="tab-item active" data-tab="chapters" onclick="switchTab('chapters')">
-                    <span class="icon"></span> 章节配置
-                    <span class="count" id="chCount">0</span>
-                </div>
-                <div class="tab-item" data-tab="rules" onclick="switchTab('rules')">
-                    <span class="icon"></span> 规则配置
-                    <span class="count" id="rlCount">0</span>
-                </div>
-                <div class="tab-item" data-tab="json" onclick="switchTab('json')">
-                    <span class="icon"></span> JSON 预览
-                </div>
-            </div>
-        </div>
-
-        <!-- 右侧面板 -->
         <div class="right-panel">
             <div class="right-body">
-                <!-- Tab: 章节 -->
-                <div class="tab-content active" id="tab-chapters">
+
+                <!-- ================================================ -->
+                <!-- 页面一：章节列表 -->
+                <!-- ================================================ -->
+                <div class="page-view active" id="view-chapters">
                     <div class="table-toolbar">
                         <span class="title">章节列表</span>
-                        <button class="btn btn-primary" onclick="openChapterModal()">+ 添加章节</button>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn btn-outline" onclick="openJSONModal()">JSON 导出</button>
+                            <button class="btn btn-primary" onclick="openChapterModal()">+ 添加章节</button>
+                        </div>
                     </div>
                     <div class="table-wrap">
                         <table>
@@ -363,7 +312,7 @@
                                     <th style="width:340px;">章节名称</th>
                                     <th style="width:90px;">存储类型</th>
                                     <th>字段列表</th>
-                                    <th style="width:120px;">操作</th>
+                                    <th style="width:200px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="chapterTableBody"></tbody>
@@ -372,10 +321,15 @@
                     <div class="empty-hint" id="chEmpty">暂无章节，点击「添加章节」开始配置</div>
                 </div>
 
-                <!-- Tab: 规则 -->
-                <div class="tab-content" id="tab-rules">
+                <!-- ================================================ -->
+                <!-- 页面二：某章节的规则配置 -->
+                <!-- ================================================ -->
+                <div class="page-view" id="view-rules">
                     <div class="table-toolbar">
-                        <span class="title">规则列表</span>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <button class="btn btn-secondary" onclick="backToChapters()">← 返回</button>
+                            <span class="title" id="rulePageTitle">章节规则配置</span>
+                        </div>
                         <button class="btn btn-primary" onclick="openRuleModal()">+ 添加规则</button>
                     </div>
                     <div class="table-wrap">
@@ -383,10 +337,9 @@
                             <thead>
                                 <tr>
                                     <th style="width:60px;">序号</th>
-                                    <th style="width:340px;">章节名称</th>
-                                    <th style="width:220px;">规则类型</th>
                                     <th>规则描述</th>
-                                    <th style="width:120px;">操作</th>
+                                    <th style="width:120px;">规则类型</th>
+                                    <th style="width:130px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="ruleTableBody"></tbody>
@@ -395,22 +348,13 @@
                     <div class="empty-hint" id="rlEmpty">暂无规则，点击「添加规则」开始配置</div>
                 </div>
 
-                <!-- Tab: JSON -->
-                <div class="tab-content" id="tab-json">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                        <span style="font-weight:bold;font-size:15px;">📦 配置 JSON</span>
-                        <div style="display:flex;gap:8px;">
-                            <button class="btn btn-outline" onclick="exportConfig()">💾 导出</button>
-                            <button class="btn btn-success" onclick="copyConfig()">📋 复制</button>
-                        </div>
-                    </div>
-                    <div class="json-preview" id="jsonPreview">{ "请先配置章节和规则" }</div>
-                </div>
             </div>
         </div>
     </div>
 
+    <!-- ================================================ -->
     <!-- 章节编辑弹窗 -->
+    <!-- ================================================ -->
     <div class="modal" id="chapterModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('chapterModal')">&times;</span>
@@ -432,10 +376,10 @@
                 </div>
             </div>
             <div class="form-group" id="chapFieldsSection" style="display:none;">
-                <label>字段列表 <span style="color:#999;font-weight:normal;">(表格型必填)</span></label>
+                <label>字段列表 <span style="color:#999;">(表格型必填)</span></label>
                 <div class="field-add-row">
                     <input type="text" id="chapFieldInput" placeholder="输入字段名后按 Enter" onkeydown="if(event.key==='Enter'){addModalField();event.preventDefault();}">
-                    <button class="btn btn-primary btn-sm" onclick="addModalField()">添加</button>
+                    <button class="btn btn-primary" onclick="addModalField()" style="padding:7px 14px;">添加</button>
                 </div>
                 <div id="chapFieldsList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
             </div>
@@ -446,7 +390,9 @@
         </div>
     </div>
 
+    <!-- ================================================ -->
     <!-- 规则编辑弹窗 -->
+    <!-- ================================================ -->
     <div class="modal" id="ruleModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('ruleModal')">&times;</span>
@@ -469,18 +415,16 @@
                 <label>规则描述 <span style="color:red;">*</span></label>
                 <textarea id="ruleContent" rows="3" placeholder="描述评估规则..."></textarea>
             </div>
-            <!-- 上下文章节 -->
             <div class="context-section visible" id="ruleContextSection">
-                <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:4px;">联合评估章节 (context_chapters) <span style="color:#999;">可选</span></label>
+                <label style="font-weight:bold;font-size:14px;display:block;margin-bottom:6px;">联合评估章节 (context_chapters) <span style="color:#999;">可选</span></label>
                 <div class="field-add-row">
                     <input type="text" id="ruleContextInput" placeholder="输入章节名后按 Enter" onkeydown="if(event.key==='Enter'){addModalContext();event.preventDefault();}">
-                    <button class="btn btn-primary btn-sm" onclick="addModalContext()">添加</button>
+                    <button class="btn btn-primary" onclick="addModalContext()" style="padding:7px 14px;">添加</button>
                 </div>
-                <div id="ruleContextList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+                <div id="ruleContextList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
             </div>
-            <!-- 计算配置 -->
             <div class="comp-section" id="ruleCompSection">
-                <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:8px;">计算配置</label>
+                <label style="font-weight:bold;font-size:14px;display:block;margin-bottom:8px;">计算配置</label>
                 <div class="form-row">
                     <div class="form-group">
                         <label>计算类型</label>
@@ -502,15 +446,27 @@
         </div>
     </div>
 
+    <!-- ================================================ -->
+    <!-- JSON 导出弹窗 -->
+    <!-- ================================================ -->
+    <div class="modal" id="jsonModal">
+        <div class="modal-content json-modal-content">
+            <span class="close-modal" onclick="closeModal('jsonModal')">&times;</span>
+            <h3>配置 JSON</h3>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:12px;">
+                <button class="btn btn-outline" onclick="exportConfig()">导出文件</button>
+                <button class="btn btn-success" onclick="copyConfig()">复制</button>
+            </div>
+            <div class="json-preview" id="jsonPreview">{ }</div>
+        </div>
+    </div>
+
     <datalist id="chDatalist"></datalist>
 
     <script>
         // ============================================================
-        // 数据
+        // 示例数据
         // ============================================================
-        let chapters = [];
-        let rules = [];
-
         const SAMPLE_CHAPTERS = [
             { name: "一、专业历史沿革和特色", storage_type: "text" },
             { name: "二、培养目标", storage_type: "text" },
@@ -535,15 +491,37 @@
         ];
 
         // ============================================================
-        // Tab 切换
+        // 数据
         // ============================================================
-        function switchTab(name) {
-            document.querySelectorAll('.tab-item').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-'+name));
+        let chapters = [];
+        let rules = [];
+
+        // 当前正在编辑规则的章节名
+        let currentRuleChapter = null;
+
+        // ============================================================
+        // 页面切换
+        // ============================================================
+        function showChapters() {
+            document.getElementById('view-chapters').classList.add('active');
+            document.getElementById('view-rules').classList.remove('active');
+        }
+
+        function showRulesForChapter(chapterName) {
+            currentRuleChapter = chapterName;
+            document.getElementById('rulePageTitle').textContent = ` ${chapterName} 规则配置`;
+            document.getElementById('view-chapters').classList.remove('active');
+            document.getElementById('view-rules').classList.add('active');
+            renderRules();
+        }
+
+        function backToChapters() {
+            currentRuleChapter = null;
+            showChapters();
         }
 
         // ============================================================
-        // 渲染表格
+        // 渲染章节列表
         // ============================================================
         function renderChapters() {
             const tbody = document.getElementById("chapterTableBody");
@@ -563,40 +541,42 @@
                     <td><span class="type-badge ${stCls}">${st}</span></td>
                     <td>${fieldsHtml}</td>
                     <td>
+                        <button class="action-btn rule-config" onclick="showRulesForChapter('${ch.name}')">规则配置</button>
                         <button class="action-btn edit" onclick="openChapterModal(${i})">编辑</button>
                         <button class="action-btn del" onclick="delChapter(${i})">删除</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById("chCount").textContent = chapters.length;
-            refreshJSON();
         }
 
+        // ============================================================
+        // 渲染规则列表（当前章节）
+        // ============================================================
         function renderRules() {
             const tbody = document.getElementById("ruleTableBody");
             const empty = document.getElementById("rlEmpty");
             tbody.innerHTML = '';
-            if (rules.length === 0) { empty.style.display = 'block'; } else { empty.style.display = 'none'; }
-            rules.forEach((r, i) => {
+            const filtered = rules.filter(r => r.chapter_name === currentRuleChapter);
+            if (filtered.length === 0) { empty.style.display = 'block'; } else { empty.style.display = 'none'; }
+            filtered.forEach((r, i) => {
                 const tr = document.createElement('tr');
                 const rt = r.rule_type === 'calculation' ? '计算类' : '文本分析';
                 const rtCls = r.rule_type === 'calculation' ? 'calc' : 'text_analysis';
-                const desc = r.rule_content ? r.rule_content.substring(0, 60) + (r.rule_content.length > 12 ? '...' : '') : '-';
+                const desc = r.rule_content || '-';
+                // 找到这条规则在全局 rules 数组中的真实索引
+                const realIdx = rules.indexOf(r);
                 tr.innerHTML = `
                     <td>${i+1}</td>
-                    <td>${r.chapter_name}</td>
-                    <td><span class="type-badge ${rtCls}">${rt}</span></td>
                     <td>${desc}</td>
+                    <td><span class="type-badge ${rtCls}">${rt}</span></td>
                     <td>
-                        <button class="action-btn edit" onclick="openRuleModal(${i})">编辑</button>
-                        <button class="action-btn del" onclick="delRule(${i})">删除</button>
+                        <button class="action-btn edit" onclick="openRuleModal(${realIdx})">编辑</button>
+                        <button class="action-btn del" onclick="delRule(${realIdx})">删除</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById("rlCount").textContent = rules.length;
-            refreshJSON();
         }
 
         // ============================================================
@@ -681,12 +661,11 @@
                     });
                 }
                 if (r.rule_type === 'calculation' && r.computation) {
-                    const compType = r.computation.type || 'table_field_sum';
-                    document.getElementById("compType").value = compType;
+                    document.getElementById("compType").value = r.computation.type || 'table_field_sum';
                     renderModalComp(r.computation);
                 }
             } else {
-                document.getElementById("ruleChapter").value = '';
+                document.getElementById("ruleChapter").value = currentRuleChapter || '';
                 document.getElementById("ruleType").value = 'text_analysis';
                 document.getElementById("ruleContent").value = '';
                 toggleRuleModalType();
@@ -746,7 +725,7 @@
         }
 
         // ============================================================
-        // 计算配置（弹窗内）
+        // 计算配置
         // ============================================================
         const COMP_TMPL = {
             table_field_sum: [
@@ -806,7 +785,7 @@
             tmpl.forEach(f => {
                 html += `<div class="form-group"><label>${f.l}</label>`;
                 if (f.t === 'select') {
-                    html += `<select class="mcomp-${f.k}" onchange="">`;
+                    html += `<select class="mcomp-${f.k}">`;
                     (f.o||[]).forEach(o => html += `<option value="${o}" ${v(f.k)===o?'selected':''}>${o}</option>`);
                     html += '</select>';
                 } else if (f.t === 'textarea') {
@@ -883,14 +862,15 @@
         }
 
         // ============================================================
-        // JSON 与导出
+        // JSON
         // ============================================================
         function refreshJSON() {
-            const config = {
-                chapters: chapters,
-                rules: rules
-            };
-            document.getElementById('jsonPreview').textContent = JSON.stringify(config, null, 2);
+            document.getElementById('jsonPreview').textContent = JSON.stringify({chapters, rules}, null, 2);
+        }
+
+        function openJSONModal() {
+            refreshJSON();
+            document.getElementById('jsonModal').style.display = 'block';
         }
 
         function exportConfig() {
@@ -923,9 +903,14 @@
         chapters = JSON.parse(JSON.stringify(SAMPLE_CHAPTERS));
         rules = JSON.parse(JSON.stringify(SAMPLE_RULES));
         renderChapters();
-        renderRules();
-        switchTab('chapters');
         updateDatalist();
+
+        // 点击弹窗背景关闭
+        document.querySelectorAll('.modal').forEach(m => {
+            m.addEventListener('click', function(e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+        });
     </script>
 </body>
 </html>
