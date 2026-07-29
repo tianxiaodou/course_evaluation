@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Microsoft YaHei','PingFang SC',Arial,sans-serif; background:#f5f7fb; color:#333; min-height:100vh; display:flex; flex-direction:column; zoom:1.5; }
+        body { font-family:'Microsoft YaHei','PingFang SC',Arial,sans-serif; background:#f5f7fb; color:#333; min-height:100vh; display:flex; flex-direction:column; zoom:1.3; }
         /* 隐藏所有滚动条 */
         ::-webkit-scrollbar { display:none; }
         * { scrollbar-width:none; -ms-overflow-style:none; }
@@ -20,28 +20,30 @@
         .tab-item { padding:12px 24px; cursor:pointer; font-size:14px; font-weight:600; color:#666; border-bottom:3px solid transparent; transition:all .2s; }
         .tab-item:hover { color:#667eea; }
         .tab-item.active { color:#667eea; border-bottom-color:#667eea; }
-        .content-wrap { flex:1; overflow:clip; padding:20px 28px; }
-        .tab-page { display:none; overflow-y:auto; height:100%; }
+        .content-wrap { flex:1; overflow:clip; padding:20px 0; }
+        .tab-page { display:none; overflow-y:auto; height:100%; padding:0 28px; }
         .tab-page.active { display:block; }
+        /* Tab1特殊处理：允许row2突破padding */
+        #page-overview { overflow:hidden; padding:0; }
         /* Tab2 固定顶部 + 下方滚动 */
         #page-detail { display:none !important; flex-direction:column; height:100%; overflow:hidden; }
         #page-detail.active { display:flex !important; }
         .detail-scroll { flex:1; overflow-y:auto; min-height:0; }
         .card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.05); padding:18px 22px; margin-bottom:18px; }
-        .card-title { font-size:15px; font-weight:600; color:#1a1a2e; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+        .card-title { font-size:15px; font-weight:600; color:#1a1a2e; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
         .card-title i { color:#667eea; width:18px; text-align:center; }
 
         /* Tab1 */
-        .row2 { display:flex; gap:18px; height:calc(66.67vh - 100px); min-height:0; }
+        .row2 { display:flex; gap:18px; height:calc(66.67vh - 180px); min-height:0; }
         .row2-left { flex:0 0 58%; display:flex; flex-direction:column; }
-        .row2-left .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; }
+        .row2-left .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; border-radius:0 12px 12px 0; }
         .row2-left .card .dim-grid { overflow-y:auto; flex:1; }
         .row2-right { flex:1; display:flex; flex-direction:column; }
-        .row2-right .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; }
+        .row2-right .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; border-radius:12px 0 0 12px; }
         .row2-right .card .rank-list { overflow-y:auto; flex:1; scrollbar-width:none; -ms-overflow-style:none; }
         .row2-right .card .rank-list::-webkit-scrollbar { display:none; }
 
-        .quality-top { display:flex; gap:14px; margin-bottom:14px; flex-shrink:0; }
+        .quality-top { display:flex; gap:14px; margin-bottom:26px; flex-shrink:0; }
         .quality-ring-card { flex:1; background:#f8f9fa; border-radius:10px; padding:16px; display:flex; align-items:center; gap:16px; }
         .ring-chart { width:72px; height:72px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .ring-chart .inner { position:absolute; width:56px; height:56px; border-radius:50%; background:#f8f9fa; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#333; }
@@ -58,12 +60,12 @@
         .dim-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; align-items:start; }
         .dim-card { border-radius:10px; padding:16px 8px; text-align:center; transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:76px; }
         /* 执行分析模式用更高的卡片 */
-        .dim-card.exec-card { padding:24px 12px; text-align:center; transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:120px; }
+        .dim-card.exec-card { padding:6px 14px; text-align:center; transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center; max-height:100px; }
         .dim-card.green { background:#e8f5e9; border:1px solid #c8e6c9; }
         .dim-card.orange { background:#fff3e0; border:1px solid #ffe0b2; }
         .dim-card.red { background:#ffebee; border:1px solid #ffcdd2; animation:blinkBorder .8s ease-in-out infinite alternate; }
         @keyframes blinkBorder { 0%{border-color:#ffcdd2} 100%{border-color:#dc3545} }
-        .dim-card .dpct { font-size:22px; font-weight:700; margin-bottom:2px; }
+        .dim-card .dpct { font-size:20px; font-weight:700; margin-bottom:2px; }
         .dim-card .dpct.green { color:#2e7d32; } .dim-card .dpct.orange { color:#e65100; } .dim-card .dpct.red { color:#c62828; }
         .dim-card .dlabel { font-size:11px; color:#555; margin-bottom:2px; }
         .dim-card .dsub { font-size:11px; color:#999; text-align:right; }
@@ -570,9 +572,9 @@
             document.querySelector('.row2-left .card-title').innerHTML = '<i class="fas fa-gauge-high"></i>各维度制定合格率 <span style="font-size:12px;color:#999;font-weight:400;">（百分数代表人才培养方案完全符合的专业占全部专业的比例）</span>';
             document.getElementById('qualityTop').innerHTML = '';
             document.getElementById('dimGrid').style.gridTemplateColumns = 'repeat(4,1fr)';
-            document.getElementById('dimGrid').style.rowGap = '';
+            document.getElementById('dimGrid').style.columnGap = '20px';
             document.getElementById('dimGrid').innerHTML = leftHtml;
-            document.getElementById('dimGrid').style.minHeight = '140px';
+            document.getElementById('dimGrid').style.maxHeight = '200px';
             // 在 dimGrid 下方追加问题规则列表（标题固定 + 列表滚动）
             const ruleHtml = FORM_RULES.map((r,i)=>{
                     const cls = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
@@ -582,7 +584,7 @@
                         <span class="rcount" style="font-size:13px;">${r.r}%</span>
                     </div>`;
                 }).join('');
-            document.getElementById('dimGrid').insertAdjacentHTML('afterend', '<div id="formRulesArea" style="flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;"><div style="border-top:1px solid #eee;margin:8px 0 4px;"></div><div class="group-title" style="padding:6px 4px;font-size:12px;color:#666;flex-shrink:0;"><i class="fas fa-exclamation-triangle" style="color:#e67e22;margin-right:4px;"></i>问题率最多的规则列表</div><div style="overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;max-height:200px;">'+ruleHtml+'</div></div>');
+            document.getElementById('dimGrid').insertAdjacentHTML('afterend', '<div id="formRulesArea" style="flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;"><div style="border-top:1px solid #eee;margin:8px 0 4px;"></div><div class="group-title" style="padding:6px 4px;font-size:12px;color:#666;flex-shrink:0;"><i class="fas fa-exclamation-triangle" style="color:#e67e22;margin-right:4px;"></i>问题率最多的规则列表</div><div style="overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;max-height:100px;">'+ruleHtml+'</div></div>');
 
             // 右侧：仅各专业制定情况
             document.querySelector('.row2-right .card-title').innerHTML = '<i class="fa-solid fa-graduation-cap"></i>各专业制定情况';
@@ -642,7 +644,7 @@
             const cls = ch.conclusion;
             // 去掉章节名中的＂合格率＂后缀
             var showName = ch.chapter_name.replace('合格率','');
-            document.getElementById('fdRight').innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);padding:18px 22px;">'+
+            document.getElementById('fdRight').innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);padding:18px 22px;min-height:100%;box-sizing:border-box;">'+
                 '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><strong style="font-size:15px;">'+showName+'</strong><span class="fd-conclusion" style="background:'+(cls==='符合'?'#d4edda':(cls==='基本符合'?'#fff3cd':'#f8d7da'))+';color:'+(cls==='符合'?'#155724':(cls==='基本符合'?'#856404':'#721c24'))+';">'+cls+'</span></div>'+
                 '<div class="fd-summary"><strong>总结：</strong>'+ch.summary+'</div>'+
                 (ch.issues.length?'<div style="margin-top:14px;"><strong style="font-size:13px;">问题与改进建议：</strong></div>'+ch.issues.map(iss=>'<div class="fd-issue"><div class="problem">'+iss.problem+'</div><div class="suggestion">'+iss.suggestion+'</div></div>').join(''):'<div style="color:#28a745;font-size:13px;margin-top:10px;">无问题</div>')+
