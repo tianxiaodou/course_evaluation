@@ -429,11 +429,11 @@
                     <div class="form-group">
                         <label>计算类型</label>
                         <select id="compType" onchange="renderModalComp()">
-                            <option value="table_field_sum">table_field_sum - 筛选求和</option>
-                            <option value="direct_compare">direct_compare - 直接聚合</option>
+                            <option value="field_aggregate">field_aggregate - 字段聚合比较</option>
                             <option value="cross_chapter_compare">cross_chapter_compare - 跨章节对比</option>
-                            <option value="lookup_aggregate">lookup_aggregate - 跨表查找</option>
+                            <option value="lookup_aggregate">lookup_aggregate - 跨表查找聚合</option>
                             <option value="custom_sql">custom_sql - 自定义SQL</option>
+                            <option value="fallback_llm">fallback_llm - LLM综合判定</option>
                         </select>
                     </div>
                 </div>
@@ -661,7 +661,7 @@
                     });
                 }
                 if (r.rule_type === 'calculation' && r.computation) {
-                    document.getElementById("compType").value = r.computation.type || 'table_field_sum';
+                    document.getElementById("compType").value = r.computation.type || 'field_aggregate';
                     renderModalComp(r.computation);
                 }
             } else {
@@ -669,7 +669,7 @@
                 document.getElementById("ruleType").value = 'text_analysis';
                 document.getElementById("ruleContent").value = '';
                 toggleRuleModalType();
-                document.getElementById("compType").value = 'table_field_sum';
+                document.getElementById("compType").value = 'field_aggregate';
                 renderModalComp();
             }
             document.getElementById("ruleModal").style.display = 'block';
@@ -728,24 +728,16 @@
         // 计算配置
         // ============================================================
         const COMP_TMPL = {
-            table_field_sum: [
+            field_aggregate: [
                 {k:'source_chapters',l:'源章节(逗号分隔)',t:'text',p:'九、课程设置结构比例表'},
+                {k:'field',l:'聚合字段',t:'text',p:'学分'},
+                {k:'aggregation',l:'聚合方式',t:'select',o:['sum','count','avg','max','min']},
                 {k:'filter_field',l:'筛选字段(可选)',t:'text',p:'课程性质'},
                 {k:'filter_value',l:'筛选值(可选)',t:'text',p:'专业选修课'},
-                {k:'field',l:'求和字段',t:'text',p:'学分'},
                 {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','gt','lt','range']},
                 {k:'target_value',l:'目标值',t:'number',p:'20'},
                 {k:'min_value',l:'range下限',t:'number',p:'30'},
                 {k:'max_value',l:'range上限',t:'number',p:'50'}
-            ],
-            direct_compare: [
-                {k:'source_chapters',l:'源章节(逗号分隔)',t:'text',p:'八、核心课程'},
-                {k:'field',l:'统计字段',t:'text',p:'核心课程名称'},
-                {k:'aggregation',l:'聚合方式',t:'select',o:['count','sum','avg','max','min']},
-                {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','range']},
-                {k:'target_value',l:'目标值',t:'number',p:'8'},
-                {k:'min_value',l:'range下限',t:'number',p:'7'},
-                {k:'max_value',l:'range上限',t:'number',p:'9'}
             ],
             cross_chapter_compare: [
                 {k:'left_chapter',l:'左侧-章节',t:'text',p:'九、课程设置结构比例表'},
@@ -772,7 +764,8 @@
             ],
             custom_sql: [
                 {k:'sql_template',l:'SQL 语句',t:'textarea',p:'SELECT COUNT(*) FROM chapter_data WHERE chapter_name=? AND material_id=?'}
-            ]
+            ],
+            fallback_llm: []
         };
 
         function renderModalComp(values) {
@@ -826,20 +819,14 @@
             const type = document.getElementById("compType").value;
             const g = (k) => { const i = document.querySelector('.mcomp-'+k); return i ? i.value.trim() : ''; };
             const comp = { type };
-            if (type === 'table_field_sum') {
+            if (type === 'field_aggregate') {
                 const chs = g('source_chapters').split(',').map(s=>s.trim()).filter(Boolean);
                 if (chs.length) comp.source_chapters = chs;
+                comp.field = g('field')||'学分';
+                comp.aggregation = g('aggregation')||'sum';
                 const ff=g('filter_field'), fv=g('filter_value');
                 if (ff && fv) comp.filter = {field:ff, value:fv};
-                comp.field = g('field')||'学分';
                 comp.comparison = g('comparison');
-                if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
-                else {comp.target_value=parseFloat(g('target_value'))||0;}
-            } else if (type==='direct_compare') {
-                const chs=g('source_chapters').split(',').map(s=>s.trim()).filter(Boolean);
-                if (chs.length) comp.source_chapters=chs;
-                comp.field=g('field')||'核心课程名称'; comp.aggregation=g('aggregation')||'count';
-                comp.comparison=g('comparison');
                 if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
                 else {comp.target_value=parseFloat(g('target_value'))||0;}
             } else if (type==='cross_chapter_compare') {
@@ -858,6 +845,7 @@
                 if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
                 else {comp.target_value=parseFloat(g('target_value'))||0;}
             } else if (type==='custom_sql') {comp.sql_template=g('sql_template');}
+            else if (type==='fallback_llm') { /* 无参数 */ }
             return comp;
         }
 
