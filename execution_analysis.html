@@ -20,7 +20,7 @@
         .tab-item { padding:12px 24px; cursor:pointer; font-size:14px; font-weight:600; color:#666; border-bottom:3px solid transparent; transition:all .2s; }
         .tab-item:hover { color:#667eea; }
         .tab-item.active { color:#667eea; border-bottom-color:#667eea; }
-        .content-wrap { flex:1; overflow:clip; padding:20px 0; }
+        .content-wrap { flex:1; overflow:clip; padding:10px 0; }
         .tab-page { display:none; overflow-y:auto; height:100%; padding:0 28px; }
         .tab-page.active { display:block; }
         /* Tab1特殊处理：允许row2突破padding */
@@ -34,7 +34,7 @@
         .card-title i { color:#667eea; width:18px; text-align:center; }
 
         /* Tab1 */
-        .row2 { display:flex; gap:18px; height:calc(66.67vh - 150px); min-height:0; }
+        .row2 { display:flex; gap:18px; height:calc(66.67vh - 100px); min-height:0; }
         .row2-left { flex:0 0 58%; display:flex; flex-direction:column; }
         .row2-left .card { flex:1; margin-bottom:0; overflow:hidden; display:flex; flex-direction:column; border-radius:0 12px 12px 0; }
         .row2-left .card .dim-grid { overflow-y:auto; flex:1; }
@@ -587,7 +587,7 @@
             document.getElementById('dimGrid').insertAdjacentHTML('afterend', '<div id="formRulesArea" style="flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;"><div style="border-top:1px solid #eee;margin:8px 0 4px;"></div><div class="group-title" style="padding:6px 4px;font-size:12px;color:#666;flex-shrink:0;"><i class="fas fa-exclamation-triangle" style="color:#e67e22;margin-right:4px;"></i>问题率最多的规则列表</div><div style="overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;max-height:100px;">'+ruleHtml+'</div></div>');
 
             // 右侧：仅各专业制定情况
-            document.querySelector('.row2-right .card-title').innerHTML = '<i class="fa-solid fa-graduation-cap"></i>各专业制定情况 <span style="font-size:12px;color:#999;font-weight:400;">（数字代表该专业的问题数）</span>';
+            document.querySelector('.row2-right .card-title').innerHTML = '<i class="fa-solid fa-graduation-cap"></i>各专业制定情况<span style="font-size:12px;color:#999;font-weight:400;">（数字代表该专业的问题数）</span>';
             const majorsWithIssues = MAJORS.map(m=>({m, cnt:10-Math.floor(Math.random()*5)})).sort((a,b)=>b.cnt-a.cnt);
             document.getElementById('rankList').innerHTML = majorsWithIssues.map((r,i)=>{
                 const cls = i===0?'top1':(i===1?'top2':(i===2?'top3':''));
