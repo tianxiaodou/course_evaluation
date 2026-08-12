@@ -568,7 +568,7 @@
     </div> -->
 
     <div class="container">
-        <div class="stats">
+        <!-- <div class="stats">
             <div class="stat-item">
                 <div class="stat-number" id="totalCount">40</div>
                 <div class="stat-label">总观测点数</div>
@@ -582,7 +582,7 @@
                 <div class="stat-label">二级要素</div>
             </div>
 
-        </div>
+        </div> -->
 
         <div class="controls">
             <div class="controls-left">
@@ -607,7 +607,7 @@
                 </div>
             </div>
             <div class="controls-right">
-                <button class="btn btn-outline" onclick="exportData()">导出数据</button>
+                <!-- <button class="btn btn-outline" onclick="exportData()">导出数据</button> -->
                 <button class="btn btn-outline" onclick="openSelfEvaluationSettings()">设置自评方式</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
             </div>
@@ -1357,21 +1357,24 @@
             // 填充自评人支撑材料（如果有）
             if (item.selfEvaluatorMaterials && item.selfEvaluatorMaterials.length > 0) {
                 item.selfEvaluatorMaterials.forEach(material => {
-                    addMaterialsItem('selfEvaluatorMaterials', typeof material === 'string' ? material : material.name);
+                    const matObj = typeof material === 'string' ? { name: material } : material;
+                    addMaterialsItem('selfEvaluatorMaterials', matObj);
                 });
             }
             
             // 填充自评汇总人支撑材料
             if (item.summaryMaterials && item.summaryMaterials.length > 0) {
                 item.summaryMaterials.forEach(material => {
-                    addMaterialsItem('summaryMaterials', typeof material === 'string' ? material : material.name);
+                    const matObj = typeof material === 'string' ? { name: material } : material; 
+                    addMaterialsItem('summaryMaterials', matObj);
                 });
             }
             
             // 填充专家评估支撑材料
             if (item.expertMaterials && item.expertMaterials.length > 0) {
                 item.expertMaterials.forEach(material => {
-                    addMaterialsItem('expertMaterials', typeof material === 'string' ? material : material.name);
+                    const matObj = typeof material === 'string' ? { name: material } : material;
+                    addMaterialsItem('expertMaterials', matObj);
                 });
             }
             
@@ -1430,30 +1433,74 @@
             const itemCount = listContainer.children.length;
             const itemId = `${prefix}Item_${itemCount}`;
             
+            // 解析value值和aiRule
+            let materialName = value;
+            let aiRuleValue = '';
+            if (typeof value === 'object' && value !== null) {
+                materialName = value.name || '';
+                aiRuleValue = value.aiRule || '';
+            }
+            
+            // 判断是否需要显示AI评估规则（自评人和自评汇总人需要）
+            const showAiRule = (prefix === 'selfEvaluatorMaterials' || prefix === 'summaryMaterials');
+            
             // 创建材料项HTML
-            const itemHtml = `
-                <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                    <div style="display: flex; align-items: center; margin-right: 10px;">
-                        <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
-                            <option value="false">否</option>
-                            <option value="true">是</option>
-                        </select>
+            let itemHtml;
+            if (showAiRule) {
+                itemHtml = `
+                    <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; margin-right: 10px;">
+                                <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                                <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                            <div class="material-input-container" style="flex: 1; margin-right: 10px;">
+                                <input type="text" placeholder="输入材料名称..." value="${materialName}" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            </div>
+                            <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
+                                <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                    <option value="">请选择模板</option>
+                                    ${templateOptions[prefix] ? templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('') : ''}
+                                </select>
+                            </div>
+                            <button type="button" onclick="removeMaterialsItemById('${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                删除
+                            </button>
+                        </div>
+                        <div style="width: 100%; display: flex; align-items: center;">
+                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">AI评估规则：</label>
+                            <input type="text" class="ai-rule-input" placeholder="输入AI评估规则..." value="${aiRuleValue}" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </div>
                     </div>
-                    <div class="material-input-container" style="flex: 1; margin-right: 10px;">
-                        <input type="text" placeholder="输入材料名称..." value="${value}" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                `;
+            } else {
+                itemHtml = `
+                    <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="display: flex; align-items: center; margin-right: 10px;">
+                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
+                            <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                        <div class="material-input-container" style="flex: 1; margin-right: 10px;">
+                            <input type="text" placeholder="输入材料名称..." value="${materialName}" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </div>
+                        <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
+                            <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                <option value="">请选择模板</option>
+                                ${templateOptions[prefix] ? templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('') : ''}
+                            </select>
+                        </div>
+                        <button type="button" onclick="removeMaterialsItemById('${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                            删除
+                        </button>
                     </div>
-                    <div class="template-select-container" style="flex: 1; margin-right: 10px; display: none;">
-                        <select class="template-select" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
-                            <option value="">请选择模板</option>
-                            ${templateOptions[prefix] ? templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('') : ''}
-                        </select>
-                    </div>
-                    <button type="button" onclick="removeMaterialsItemById('${itemId}')" style="padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
-                        删除
-                    </button>
-                </div>
-            `;
+                `;
+            }
             
             // 添加到容器
             listContainer.insertAdjacentHTML('beforeend', itemHtml);
@@ -1550,18 +1597,22 @@
                 const templateRequired = item.querySelector('.template-required').value === 'true';
                 const materialInput = item.querySelector('.material-input-container input');
                 const templateSelect = item.querySelector('.template-select');
+                const aiRuleInput = item.querySelector('.ai-rule-input');
+                const aiRule = aiRuleInput ? aiRuleInput.value.trim() : '';
                 
                 if (templateRequired && templateSelect && templateSelect.value) {
                     materials.push({
                         name: templateSelect.options[templateSelect.selectedIndex].text,
                         template: templateSelect.value,
-                        requiresTemplate: true
+                        requiresTemplate: true,
+                        aiRule: aiRule || undefined
                     });
                 } else if (materialInput && materialInput.value.trim()) {
                     materials.push({
                         name: materialInput.value.trim(),
                         template: null,
-                        requiresTemplate: false
+                        requiresTemplate: false,
+                        aiRule: aiRule || undefined
                     });
                 }
             });
