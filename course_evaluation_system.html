@@ -12,9 +12,18 @@
         }
 
         body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            font-family: 'Microsoft YaHei';
             background-color: #f5f5f5;
             line-height: 1.6;
+        }
+
+        /* 所有填写内容的控件：统一微软雅黑字体与深灰字色 */
+        input,
+        select,
+        textarea,
+        option {
+            font-family: 'Microsoft YaHei';
+            color: #343434;
         }
 
         .header {
@@ -298,6 +307,167 @@
             overflow-y: auto;
         }
 
+        /* 指标弹窗：加宽 + 两栏布局 */
+        .modal-content.modal-content-wide {
+            width: 92%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 88vh;
+        }
+
+        .modal-content-wide #indicatorForm {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .modal-columns {
+            display: flex;
+            align-items: stretch;
+            flex: 1;
+            min-height: 0;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .modal-column {
+            flex: 1 1 50%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .modal-column-title {
+            margin: 0;
+            padding: 12px 16px;
+            font-size: 16px;
+            color: #495057;
+            background-color: #f8f9ff;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* 两栏各自独立滚动，互不影响 */
+        .modal-column-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #dcdfe6 transparent;
+        }
+
+        /* 细而浅的滚动条（WebKit） */
+        .modal-column-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-column-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-column-body::-webkit-scrollbar-thumb {
+            background-color: #dcdfe6;
+            border-radius: 3px;
+        }
+
+        .modal-column-body::-webkit-scrollbar-thumb:hover {
+            background-color: #c8ccd4;
+        }
+
+        /* 弹窗标题栏：标题与关闭按钮同一行，关闭按钮靠最右 */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .modal-header .close {
+            float: none;
+            flex: 0 0 auto;
+            line-height: 1;
+        }
+
+        /* 两栏中间的分割线 */
+        .modal-column-divider {
+            width: 1px;
+            flex: 0 0 1px;
+            background-color: #e0e0e0;
+        }
+
+        /* 带框的分组区块（如“自评总结”） */
+        .boxed-section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .boxed-field {
+            margin-bottom: 10px;
+        }
+
+        .boxed-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .boxed-field > label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* 自评总结：标签与输入框同一行 */
+        .boxed-field-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .boxed-field-inline > label {
+            display: inline-block;
+            margin-bottom: 0;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+
+        .boxed-field-inline > input,
+        .boxed-field-inline > textarea {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* 高度跟随文本内容自适应 */
+        .auto-grow {
+            resize: none;
+            overflow: hidden;
+        }
+
+        /* 自评支撑材料主材料名称 + 定量指标名称：放大、加粗、黑灰色 */
+        #materialsList .material-input-container input,
+        #materialsList .template-select-container .template-select,
+        #statisticsList .statistics-name-input {
+            font-size: 14px;
+            font-weight: bold;
+            color: #343434;
+        }
+
+        /* 框内字段标签使用常规字重（框外标题保持加粗） */
+        #indicatorForm .boxed-field > label,
+        #indicatorForm #materialsList .materials-item label,
+        #indicatorForm #expertMaterialsList .materials-item label,
+        #indicatorForm .statistics-item label {
+            font-weight: lighter;
+        }
+
         .tab-container {
             display: flex;
             gap: 10px;
@@ -356,6 +526,30 @@
         .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        /* 基本信息 / 自评总结的填写控件：与材料项输入框保持一致的外观 */
+        .form-group input.basic-input,
+        .form-group select.basic-input,
+        .form-group textarea.basic-input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        /* 基本信息四个字段：初始高度 36px、内边距 8px（高度仍随内容自适应） */
+        .form-group textarea.basic-input-lg {
+            padding: 8px;
+            min-height: 36px;
+            line-height: 18px;
+        }
+
+        /* 观测点权重输入框：高度 36px、内边距 8px */
+        .form-group input.basic-input-weight {
+            height: 36px;
+            padding: 8px;
         }
 
         /* 美化下拉框样式 */
@@ -501,6 +695,7 @@
             <div class="controls-right">
                 <!-- <button class="btn btn-outline" onclick="window.location.href='ai_evaluation_rules.html'">AI评估规则</button> -->
                 <!-- <button class="btn btn-outline" onclick="importData()">导入数据</button> -->
+                <button class="btn btn-outline" onclick="openStatisticsTemplateUpload()">上传定量指标模版</button>
                 <button class="btn btn-outline" onclick="openMaterialsList()">查看支撑材料列表</button>
                 <button class="btn btn-outline" onclick="exportData()">导出数据</button>
                 <button class="btn btn-primary" onclick="addNewIndicator()">新增指标</button>
@@ -513,15 +708,16 @@
                 <table id="evaluationTable">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">序号</th>
-                            <th style="width: 200px;">一级指标</th>
-                            <th style="width: 200px;">二级指标</th>
-                            <th style="width: 300px;">三级观测点</th>
-                            <th style="width: 100px;">权重</th>
-                            <th style="width: 280px;">自评支撑材料</th>
-                            <th style="width: 280px;">专家评估支撑材料</th>
-                            <th style="width: 350px;">评估标准</th>
-                            <th style="width: 80px;">操作</th>
+                            <th style="width: 50px; text-align: center;">序号</th>
+                            <th style="width: 200px; text-align: center;">一级指标</th>
+                            <th style="width: 200px; text-align: center;">二级指标</th>
+                            <th style="width: 300px; text-align: center;">三级观测点</th>
+                            <th style="width: 350px; text-align: center;">评估标准</th>
+                            <th style="width: 100px; text-align: center;">权重</th>
+                            <th style="width: 200px; text-align: center;">定量指标</th>
+                            <th style="width: 280px; text-align: center;">自评支撑材料</th>
+                            <th style="width: 280px; text-align: center;">专家工作材料</th>
+                            <th style="width: 80px; text-align: center;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -534,51 +730,95 @@
 
     <!-- 新增/编辑指标模态框 -->
     <div id="indicatorModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modalTitle">新增指标</h2>
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h2 id="modalTitle">新增指标</h2>
+                <span class="close">&times;</span>
+            </div>
             <form id="indicatorForm">
-                <div class="form-group">
-                    <label for="level1Input">一级指标：</label>
-                    <input type="text" id="level1Input" required>
-                </div>
-                <div class="form-group">
-                    <label for="level2Input">二级指标：</label>
-                    <input type="text" id="level2Input" required>
-                </div>
-                <div class="form-group">
-                    <label for="level3Input">三级观测点：</label>
-                    <textarea id="level3Input" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="weightInput">观测点权重：</label>
-                    <input type="number" id="weightInput" min="0" step="0.1" placeholder="请输入权重值...">
-                </div>
-                <!-- 自评支撑材料 -->
-                <div class="form-group">
-                    <label>自评支撑材料：</label>
-                    <div id="materialsList">
-                        <!-- 材料项将通过JavaScript动态添加 -->
+                <div class="modal-columns">
+                    <!-- 左栏：基本信息 -->
+                    <div class="modal-column">
+                        <h3 class="modal-column-title">基本信息</h3>
+                        <div class="modal-column-body">
+                            <div class="form-group">
+                                <label for="level1Input">一级指标：</label>
+                                <textarea id="level1Input" class="basic-input basic-input-lg auto-grow" rows="1" required oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="level2Input">二级指标：</label>
+                                <textarea id="level2Input" class="basic-input basic-input-lg auto-grow" rows="1" required oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="level3Input">三级观测点：</label>
+                                <textarea id="level3Input" class="basic-input basic-input-lg auto-grow" rows="1" required oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="standardInput">评估标准：</label>
+                                <textarea id="standardInput" class="basic-input basic-input-lg auto-grow" rows="1" placeholder="请输入评估标准，例如：A等级需要满足...；C等级需要满足..." oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="weightInput">观测点权重：</label>
+                                <input type="number" id="weightInput" class="basic-input basic-input-weight" min="0" step="0.1" placeholder="请输入权重值...">
+                            </div>
+                            <!-- 专家工作材料 -->
+                            <div class="form-group">
+                                <label>专家工作材料：</label>
+                                <div id="expertMaterialsList">
+                                    <!-- 材料项将通过JavaScript动态添加 -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('expertMaterials')" style="margin-top: 10px;">
+                                    + 添加材料
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('materials')" style="margin-top: 10px;">
-                        + 添加材料
-                    </button>
-                </div>
-                
-                <!-- 专家评估支撑材料 -->
-                <div class="form-group">
-                    <label>专家评估支撑材料：</label>
-                    <div id="expertMaterialsList">
-                        <!-- 材料项将通过JavaScript动态添加 -->
+
+                    <!-- 中间分割线 -->
+                    <div class="modal-column-divider"></div>
+
+                    <!-- 右栏：系统打分办法 -->
+                    <div class="modal-column">
+                        <h3 class="modal-column-title">系统打分办法</h3>
+                        <div class="modal-column-body">
+                            <!-- 自评总结：权重 + AI评估规则 -->
+                            <div class="form-group">
+                                <label>自评总结：</label>
+                                <div class="boxed-section">
+                                    <div class="boxed-field boxed-field-inline">
+                                        <label for="selfSummaryWeightInput" style="font-size: 14px; margin-right: 0px;">得分权重：</label>
+                                        <input type="number" id="selfSummaryWeightInput" class="basic-input" min="0" step="0.1" placeholder="请输入权重值...">
+                                    </div>
+                                    <div class="boxed-field boxed-field-inline">
+                                        <label for="selfSummaryAiRuleInput" style="font-size: 14px; max-width: 70px;">AI评估规则：</label>
+                                        <textarea id="selfSummaryAiRuleInput" class="basic-input auto-grow" rows="1" placeholder="请输入AI评估规则..." oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 定量指标 -->
+                            <div class="form-group">
+                                <label>定量指标：</label>
+                                <div id="statisticsList">
+                                    <!-- 材料项将通过JavaScript动态添加 -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('statistics')" style="margin-top: 10px;">
+                                    + 添加定量指标
+                                </button>
+                            </div>
+                            <!-- 自评支撑材料 -->
+                            <div class="form-group">
+                                <label>自评支撑材料：</label>
+                                <div id="materialsList">
+                                    <!-- 材料项将通过JavaScript动态添加 -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('materials')" style="margin-top: 10px;">
+                                    + 添加材料
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addMaterialsItem('expertMaterials')" style="margin-top: 10px;">
-                        + 添加材料
-                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="standardInput">评估标准：</label>
-                    <textarea id="standardInput" rows="4" placeholder="请输入评估标准，例如：A等级需要满足...；C等级需要满足..."></textarea>
-                </div>
+
                 <div style="text-align: center; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()" style="margin-right: 10px;">取消</button>
                     <button type="submit" class="btn btn-primary">保存</button>
@@ -688,21 +928,39 @@
             <h2>支撑材料列表</h2>
             <div class="tab-container" style="margin-bottom: 15px;">
                 <button class="tab-btn active" onclick="switchMaterialsTab('self')" id="selfTabBtn">自评支撑材料</button>
-                <button class="tab-btn" onclick="switchMaterialsTab('expert')" id="expertTabBtn">专家评估支撑材料</button>
+                <button class="tab-btn" onclick="switchMaterialsTab('expert')" id="expertTabBtn">专家工作材料</button>
+                <button class="tab-btn" onclick="switchMaterialsTab('statistics')" id="statisticsTabBtn">定量指标</button>
             </div>
             <div id="materialsListContainer" style="max-height: 400px; overflow-y: auto;">
                 <table id="materialsListTable" style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr>
+                        <tr id="materialsListHead">
                             <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 50px;">序号</th>
                             <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">材料名称</th>
                             <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100px;">是否有模板</th>
-                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100px;">关联的观测点</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">关联的观测点序号</th>
                         </tr>
                     </thead>
                     <tbody id="materialsListBody">
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传定量指标模版模态框 -->
+    <div id="statisticsUploadModal" class="modal">
+        <div class="modal-content" style="max-width: 560px;">
+            <span class="close">&times;</span>
+            <h2>上传定量指标模版</h2>
+            <div class="form-group">
+                <label for="statisticsTemplateFile">选择模版文件：</label>
+                <input type="file" id="statisticsTemplateFile" accept=".xlsx,.xls,.csv" style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+            </div>
+            <div id="statisticsTemplateFileName" style="color: #6c757d; font-size: 13px; margin-bottom: 10px;"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="button" class="btn btn-secondary" onclick="closeStatisticsTemplateUpload()" style="margin-right: 10px;">取消</button>
+                <button type="button" class="btn btn-primary" onclick="uploadStatisticsTemplate()">上传</button>
             </div>
         </div>
     </div>
@@ -714,14 +972,34 @@
                 level1: "1. 课程目标与内容评价",
                 level2: "1.1 课程目标定位",
                 level3: "1.1.1课程目标定位准确，符合学校办学定位和人才培养目标",
-                materials: "1. 课程教学大纲\n2. 人才培养方案\n3. 课程目标设定说明文档",
+                weight: 4,
+                selfSummaryWeight: 0.5,
+                selfSummaryAiRule: "自评总结应说明课程目标与学校办学定位、专业人才培养目标的对应关系，并附相应支撑材料。",
+                materials: [
+                    { name: "课程教学大纲", weight: 1, aiRule: "课程教学大纲应明确列出课程目标，体现对人才培养目标的支撑。", relatedMaterial: { type: "custom", name: "专业人才培养方案" } },
+                    { name: "专业人才培养方案", weight: 0.5, aiRule: "方案中应明确学校办学定位与各专业培养目标。" },
+                    { name: "课程目标设定说明文档", weight: 0.5, aiRule: "说明文档应清晰阐述课程目标与办学定位的对应关系。" }
+                ],
+                expertMaterials: [
+                    "课程教学大纲及课程目标设定说明文档",
+                    "专业人才培养方案相关章节",
+                    "课程目标与办学定位对应关系材料"
+                ],
+                statisticsTables: [
+                    { name: "课程目标达成度", scoreWeight: 1 },
+                    { name: "人才培养目标达成度", scoreWeight: 0.5 }
+                ],
                 standard: "A等级：课程目标与学校办学定位高度契合，明确支撑具体人才培养目标；C等级：课程目标与学校办学定位基本符合，对人才培养目标的支撑不够明确。"
             },
             {
                 level1: "1. 课程目标与内容评价",
                 level2: "1.1 课程目标定位",
                 level3: "1.1.2课程目标面向产出，以培养学生能力为主线，支撑毕业要求",
-                materials: "1. 课程目标与毕业要求对应关系矩阵\n2. 能力导向的课程目标描述\n3. 学生能力培养案例",
+                materials: [
+                    { name: "课程目标与毕业要求对应关系矩阵", aiRule: "对应矩阵应清晰展示每个课程目标支撑的毕业要求指标点。", relatedMaterial: { type: "custom", name: "毕业要求指标点分解表" } },
+                    { name: "能力导向的课程目标描述", aiRule: "目标描述应使用行为动词，体现能力导向。" },
+                    { name: "学生能力培养案例", aiRule: "案例应体现学生能力培养的实际成效。" }
+                ],
                 standard: "A等级：课程目标明确以能力培养为核心，与毕业要求有清晰对应关系；C等级：课程目标有一定能力导向，但与毕业要求的对应关系不够清晰。"
             },
             {
@@ -890,6 +1168,10 @@
                 level2: "3.3 课程目标达成情况",
                 level3: "3.3.2课程目标达成情况采用多种评价方式，包括直接的量化评价和间接 的调查问卷评价等，多维呈现学生能力达成情况；量化计算科学合理，结论令人信服",
                 materials: "1. 多元评价方式设计\n2. 量化评价数据\n3. 问卷调查结果\n4. 达成度计算过程",
+                statisticsTables: [
+                    { name: "课程目标达成度统计表", scoreWeight: 40 },
+                    { name: "学生学业表现统计表", scoreWeight: 60 }
+                ],
                 standard: "A等级：评价方式多样，量化计算科学，结论可信；C等级：评价方式基本多样，量化计算基本合理。"
             },
             {
@@ -981,13 +1263,13 @@
         let filteredData = [...evaluationData];
         let currentEditIndex = -1;
 
-        // 为现有数据添加权重和专家评估支撑材料假数据
+        // 为现有数据添加权重和专家工作材料假数据
         function addWeightData() {
             evaluationData.forEach(item => {
                 // 为所有指标重新生成3-5之间的随机整数
                 item.weight = Math.floor(Math.random() * 3) + 3;
                 
-                // 添加专家评估支撑材料假数据
+                // 添加专家工作材料假数据
                 if (!item.expertMaterials) {
                     item.expertMaterials = "1. 课堂教学录像\n2. 课程考核资料\n3. 学生作业样本\n4. 教学反思报告";
                 }
@@ -1001,6 +1283,35 @@
             updateStats();
             populateFilters();
             bindEvents();
+        }
+
+        // 处理材料显示：列出该观测点所有涉及的自评支撑材料（含关联材料，不区分类型）
+        function collectSelfMaterialNames(materials) {
+            if (!Array.isArray(materials)) {
+                return materials; // 字符串形式原样保留
+            }
+            const names = [];
+            materials.forEach(m => {
+                if (m && typeof m === 'object') {
+                    if (m.name && m.name.trim()) names.push(m.name.trim());
+                    if (m.relatedMaterial && m.relatedMaterial.name && m.relatedMaterial.name.trim()) names.push(m.relatedMaterial.name.trim());
+                } else if (m && String(m).trim()) {
+                    names.push(String(m).trim());
+                }
+            });
+            // 去重保序
+            return names.filter((n, i) => names.indexOf(n) === i).join('\n');
+        }
+        // 收集定量指标统计表名称
+        function collectStatisticsNames(statisticsTables) {
+            if (!statisticsTables) return '';
+            if (!Array.isArray(statisticsTables)) return String(statisticsTables);
+            const names = [];
+            statisticsTables.forEach(t => {
+                const name = (t && typeof t === 'object') ? t.name : t;
+                if (name && String(name).trim()) names.push(String(name).trim());
+            });
+            return names.filter((n, i) => names.indexOf(n) === i).join('\n');
         }
 
         // 渲染表格
@@ -1021,9 +1332,9 @@
                     editIndicator(index);
                 });
                 
-                // 处理材料显示
-                const displayMaterials = Array.isArray(item.materials) ? item.materials.map(m => m.name).join('\n') : item.materials;
-                const displayExpertMaterials = Array.isArray(item.expertMaterials) ? item.expertMaterials.map(m => m.name).join('\n') : item.expertMaterials;
+                const displayMaterials = collectSelfMaterialNames(item.materials) || '暂无自评支撑材料要求';
+                const displayStatisticsTables = collectStatisticsNames(item.statisticsTables) || '-';
+                const displayExpertMaterials = Array.isArray(item.expertMaterials) ? item.expertMaterials.map(m => (m && typeof m === 'object') ? m.name : m).join('\n') : item.expertMaterials;
                 
                 row.innerHTML = `
                     <td style="position: relative;">
@@ -1033,15 +1344,18 @@
                     <td class="level-1">${item.level1}</td>
                     <td class="level-2">${item.level2}</td>
                     <td class="level-3">${item.level3}</td>
-                    <td class="weight-cell">${item.weight || '0'}</td>
-                    <td class="materials-cell">
-                        <div class="materials-content">${displayMaterials || '暂无自评支撑材料要求'}</div>
-                    </td>
-                    <td class="expert-materials-cell">
-                        <div class="expert-materials-content">${displayExpertMaterials || '暂无专家评估支撑材料要求'}</div>
-                    </td>
                     <td class="standard-cell">
                         <div class="standard-content">${item.standard || '暂无评估标准'}</div>
+                    </td>
+                    <td class="weight-cell">${item.weight || '0'}</td>
+                    <td class="statistics-cell">
+                        <div class="materials-content statistics-content">${displayStatisticsTables}</div>
+                    </td>
+                    <td class="materials-cell">
+                        <div class="materials-content">${displayMaterials}</div>
+                    </td>
+                    <td class="expert-materials-cell">
+                        <div class="expert-materials-content">${displayExpertMaterials || '暂无专家工作材料要求'}</div>
                     </td>
                     <td>
                         
@@ -1092,12 +1406,12 @@
                 const expandedRow = document.createElement('tr');
                 expandedRow.className = 'expanded-row';
                 // 处理材料显示
-                const fullMaterials = Array.isArray(filteredData[index].materials) ? filteredData[index].materials.map(m => m.name).join('\n') : (filteredData[index].materials || '暂无自评支撑材料要求');
-                const fullExpertMaterials = Array.isArray(filteredData[index].expertMaterials) ? filteredData[index].expertMaterials.map(m => m.name).join('\n') : (filteredData[index].expertMaterials || '暂无专家评估支撑材料要求');
+                const fullMaterials = collectSelfMaterialNames(filteredData[index].materials) || '暂无自评支撑材料要求';
+                const fullExpertMaterials = Array.isArray(filteredData[index].expertMaterials) ? filteredData[index].expertMaterials.map(m => (m && typeof m === 'object') ? m.name : m).join('\n') : (filteredData[index].expertMaterials || '暂无专家工作材料要求');
                 const fullStandard = filteredData[index].standard || '暂无评估标准';
 
                 expandedRow.innerHTML = `
-                    <td colspan="9" style="background: #f8f9ff; padding: 20px;">
+                    <td colspan="10" style="background: #f8f9ff; padding: 20px;">
                         <h4 style="margin-bottom: 10px; color: #667eea;">详细信息</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                             <div>
@@ -1109,7 +1423,7 @@
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <h5 style="color: #495057; margin: 0;">专家评估支撑材料要求：</h5>
+                                    <h5 style="color: #495057; margin: 0;">专家工作材料要求：</h5>
                                     <button style="background: none; border: none; padding: 0; color: #667eea; cursor: pointer; text-decoration: underline;" onclick="editField(${index}, 'expertMaterials')">编辑</button>
                                 </div>
                                 <div style="white-space: pre-line; color: #6c757d; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">${fullExpertMaterials}</div>
@@ -1197,31 +1511,46 @@
                 '课堂教学录像模板', '课程考核资料模板', '学生作业样本模板', '教学反思报告模板'
             ];
 
-            // 收集自评支撑材料
+            // 收集自评支撑材料（同时收集作为评估对象 / 作为关联材料两种身份）
             const selfMaterialsMap = {};
+
+            function ensureSelfEntry(name) {
+                if (!selfMaterialsMap[name]) {
+                    selfMaterialsMap[name] = {
+                        hasTemplate: templates.includes(name),
+                        asPrimaryIndices: [],
+                        asRelatedIndices: []
+                    };
+                }
+            }
 
             evaluationData.forEach((item, index) => {
                 if (item.materials) {
-                    const materials = Array.isArray(item.materials) ? item.materials : item.materials.split('\n');
+                    const materials = Array.isArray(item.materials) ? item.materials : item.materials.split('\n').map(n => ({ name: n.trim() })).filter(m => m.name);
                     materials.forEach(material => {
                         const materialName = typeof material === 'object' ? material.name : material;
                         if (materialName && materialName.trim()) {
                             const name = materialName.trim();
-                            if (!selfMaterialsMap[name]) {
-                                selfMaterialsMap[name] = {
-                                    hasTemplate: templates.includes(name),
-                                    observationIndices: []
-                                };
+                            ensureSelfEntry(name);
+                            if (!selfMaterialsMap[name].asPrimaryIndices.includes(index + 1)) {
+                                selfMaterialsMap[name].asPrimaryIndices.push(index + 1);
                             }
-                            if (!selfMaterialsMap[name].observationIndices.includes(index + 1)) {
-                                selfMaterialsMap[name].observationIndices.push(index + 1);
+                            // 关联材料
+                            if (typeof material === 'object' && material.relatedMaterial && material.relatedMaterial.name) {
+                                const relatedName = material.relatedMaterial.name.trim();
+                                if (relatedName) {
+                                    ensureSelfEntry(relatedName);
+                                    if (!selfMaterialsMap[relatedName].asRelatedIndices.includes(index + 1)) {
+                                        selfMaterialsMap[relatedName].asRelatedIndices.push(index + 1);
+                                    }
+                                }
                             }
                         }
                     });
                 }
             });
 
-            // 收集专家评估支撑材料
+            // 收集专家工作材料
             const expertMaterialsMap = {};
 
             evaluationData.forEach((item, index) => {
@@ -1244,12 +1573,37 @@
                 }
             });
 
+            // 收集定量指标统计表（去重，记录每个统计表被哪些观测点使用）
+            const statisticsTablesList = [];
+            const statisticsTablesMap = {};
+            evaluationData.forEach((item, index) => {
+                if (item.statisticsTables) {
+                    const tables = Array.isArray(item.statisticsTables) ? item.statisticsTables : String(item.statisticsTables).split('\n');
+                    tables.forEach(table => {
+                        // 兼容 { name, scoreWeight } 对象与纯字符串两种格式
+                        let name = (table && typeof table === 'object') ? table.name : table;
+                        name = name && name.trim ? name.trim() : name;
+                        if (name) {
+                            if (!statisticsTablesMap[name]) {
+                                statisticsTablesMap[name] = { indices: [] };
+                                statisticsTablesList.push(name);
+                            }
+                            if (!statisticsTablesMap[name].indices.includes(index + 1)) {
+                                statisticsTablesMap[name].indices.push(index + 1);
+                            }
+                        }
+                    });
+                }
+            });
+
             // 保存到全局变量
             window.selfMaterialsMap = selfMaterialsMap;
             window.expertMaterialsMap = expertMaterialsMap;
+            window.statisticsTablesList = statisticsTablesList;
+            window.statisticsTablesMap = statisticsTablesMap;
 
             // 生成表格内容
-            renderMaterialsTable(currentMaterialsTab);
+            switchMaterialsTab(currentMaterialsTab);
 
             // 显示模态框
             document.getElementById('materialsListModal').style.display = 'block';
@@ -1272,27 +1626,124 @@
             currentMaterialsTab = tab;
             document.getElementById('selfTabBtn').classList.toggle('active', tab === 'self');
             document.getElementById('expertTabBtn').classList.toggle('active', tab === 'expert');
+            document.getElementById('statisticsTabBtn').classList.toggle('active', tab === 'statistics');
             renderMaterialsTable(tab);
         }
 
+        // 支撑材料列表表头（自评/专家 四列）
+        const MATERIALS_HEAD_HTML = `
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 50px;">序号</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">材料名称</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 100px;">是否有模板</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">关联的观测点序号</th>
+        `;
+
         function renderMaterialsTable(tab) {
-            const materialsMap = tab === 'self' ? window.selfMaterialsMap : window.expertMaterialsMap;
             const tbody = document.getElementById('materialsListBody');
+            const headRow = document.getElementById('materialsListHead');
             tbody.innerHTML = '';
+
+            // 定量指标统计表：三列（序号、统计表名称、关联的观测点序号）
+            if (tab === 'statistics') {
+                headRow.innerHTML = `
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; width: 50px;">序号</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">定量指标名称</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">关联的观测点序号</th>
+                `;
+                const tables = window.statisticsTablesList || [];
+                if (tables.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `<td colspan="3" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #999;">暂无定量指标，请在指标编辑中添加</td>`;
+                    tbody.appendChild(emptyRow);
+                    return;
+                }
+                tables.forEach((name, index) => {
+                    const info = window.statisticsTablesMap && window.statisticsTablesMap[name];
+                    const indices = (info && info.indices) || [];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="border: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${name}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${indices.join(',')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                return;
+            }
+
+            // 自评/专家：恢复四列表头（序号、材料名称、是否有模板、关联的观测点序号）
+            headRow.innerHTML = MATERIALS_HEAD_HTML;
+
+            const materialsMap = tab === 'self' ? window.selfMaterialsMap : window.expertMaterialsMap;
 
             let index = 1;
             Object.keys(materialsMap).forEach(name => {
                 const material = materialsMap[name];
                 const row = document.createElement('tr');
+
+                let indices = [];
+                if (tab === 'self') {
+                    // 自评支撑材料：合并作为评估对象与关联材料的观测点序号
+                    indices = [...new Set([...(material.asPrimaryIndices || []), ...(material.asRelatedIndices || [])])].sort((a, b) => a - b);
+                } else {
+                    // 专家工作材料
+                    indices = (material.observationIndices || []).slice().sort((a, b) => a - b);
+                }
                 row.innerHTML = `
                     <td style="border: 1px solid #ddd; padding: 8px;">${index}</td>
                     <td style="border: 1px solid #ddd; padding: 8px;">${name}</td>
                     <td style="border: 1px solid #ddd; padding: 8px;">${material.hasTemplate ? '是' : '否'}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${material.observationIndices.join(', ')}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${indices.join(', ')}</td>
                 `;
                 tbody.appendChild(row);
                 index++;
             });
+        }
+
+        // 上传定量指标统计表模版
+        function openStatisticsTemplateUpload() {
+            document.getElementById('statisticsUploadModal').style.display = 'block';
+            document.getElementById('statisticsTemplateFile').value = '';
+            document.getElementById('statisticsTemplateFileName').textContent = '';
+
+            // 绑定关闭按钮事件
+            const modal = document.getElementById('statisticsUploadModal');
+            const closeBtn = modal.querySelector('.close');
+            closeBtn.onclick = closeStatisticsTemplateUpload;
+
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    closeStatisticsTemplateUpload();
+                }
+            };
+
+            // 文件选择后显示文件名
+            document.getElementById('statisticsTemplateFile').onchange = function(e) {
+                const file = e.target.files[0];
+                const info = document.getElementById('statisticsTemplateFileName');
+                if (file) {
+                    info.textContent = '已选择：' + file.name + '（' + (file.size / 1024).toFixed(1) + ' KB）';
+                } else {
+                    info.textContent = '';
+                }
+            };
+        }
+
+        function closeStatisticsTemplateUpload() {
+            document.getElementById('statisticsUploadModal').style.display = 'none';
+        }
+
+        function uploadStatisticsTemplate() {
+            const fileInput = document.getElementById('statisticsTemplateFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请先选择要上传的模版文件！');
+                return;
+            }
+            // 模拟上传（无后端，可自行替换为真实上传接口）
+            alert('模版《' + file.name + '》上传成功！');
+            closeStatisticsTemplateUpload();
         }
 
         // 更新统计信息
@@ -1338,17 +1789,27 @@
             });
         }
 
+        // 重置指标弹窗左右两栏的滚动位置
+        function resetIndicatorModalScroll() {
+            document.querySelectorAll('#indicatorModal .modal-column-body').forEach(el => {
+                el.scrollTop = 0;
+            });
+        }
+
         // 新增指标
         function addNewIndicator() {
             currentEditIndex = -1;
             document.getElementById('modalTitle').textContent = '新增指标';
             document.getElementById('indicatorForm').reset();
             // 清空材料项
+            document.getElementById('statisticsList').innerHTML = '';
             document.getElementById('materialsList').innerHTML = '';
             document.getElementById('expertMaterialsList').innerHTML = '';
             document.getElementById('indicatorModal').style.display = 'block';
-            // 滚动到顶部
-            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
+            // 重置左右两栏滚动位置
+            resetIndicatorModalScroll();
+            // 重置自适应文本域高度
+            autoResizeAllTextareas();
         }
 
         // 在指定位置上方插入指标
@@ -1357,11 +1818,14 @@
             document.getElementById('modalTitle').textContent = '在上方插入指标';
             document.getElementById('indicatorForm').reset();
             // 清空材料项
+            document.getElementById('statisticsList').innerHTML = '';
             document.getElementById('materialsList').innerHTML = '';
             document.getElementById('expertMaterialsList').innerHTML = '';
             document.getElementById('indicatorModal').style.display = 'block';
-            // 滚动到顶部
-            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
+            // 重置左右两栏滚动位置
+            resetIndicatorModalScroll();
+            // 重置自适应文本域高度
+            autoResizeAllTextareas();
             
             // 保存插入位置
             window.insertPosition = index;
@@ -1378,10 +1842,52 @@
             document.getElementById('level3Input').value = item.level3;
             document.getElementById('weightInput').value = item.weight || '';
             document.getElementById('standardInput').value = item.standard || '';
+            // 自评总结：权重 + AI评估规则
+            // 兼容旧数据：早期版本把数字存在 selfSummaryWeight 中
+            const selfSummaryWeightInput = document.getElementById('selfSummaryWeightInput');
+            if (item.selfSummaryWeight !== undefined && item.selfSummaryWeight !== null && item.selfSummaryWeight !== '') {
+                selfSummaryWeightInput.value = item.selfSummaryWeight;
+            } else {
+                selfSummaryWeightInput.value = '';
+            }
+            const selfSummaryAiRuleInput = document.getElementById('selfSummaryAiRuleInput');
+            selfSummaryAiRuleInput.value = item.selfSummaryAiRule || '';
             
             // 清空现有材料项
+            document.getElementById('statisticsList').innerHTML = '';
             document.getElementById('materialsList').innerHTML = '';
             document.getElementById('expertMaterialsList').innerHTML = '';
+            
+            // 添加定量指标统计表项
+            if (item.statisticsTables) {
+                const tables = Array.isArray(item.statisticsTables) ? item.statisticsTables : String(item.statisticsTables).split('\n');
+                tables.forEach(entry => {
+                    // 兼容 { name, scoreWeight } 对象与旧版纯字符串两种格式
+                    let name = entry;
+                    let scoreWeight = '';
+                    if (entry && typeof entry === 'object') {
+                        name = entry.name;
+                        if (entry.scoreWeight !== undefined && entry.scoreWeight !== null) {
+                            scoreWeight = entry.scoreWeight;
+                        }
+                    }
+                    if (name && name.trim()) {
+                        addMaterialsItem('statistics');
+                        const statisticsContainer = document.getElementById('statisticsList');
+                        const lastItem = statisticsContainer.querySelector('.statistics-item:last-child');
+                        if (lastItem) {
+                            const nameInput = lastItem.querySelector('.statistics-name-input');
+                            const weightInput = lastItem.querySelector('.statistics-weight-input');
+                            if (nameInput) {
+                                nameInput.value = name.trim();
+                            }
+                            if (weightInput && scoreWeight !== '') {
+                                weightInput.value = scoreWeight;
+                            }
+                        }
+                    }
+                });
+            }
             
             // 添加自评支撑材料项
             if (item.materials) {
@@ -1413,13 +1919,25 @@
                             templateValue = template ? template.value : '';
                         }
                         
+                        // 处理关联材料
+                        const hasRelatedMaterial = material.relatedMaterial ? 'true' : 'false';
+                        const relatedMaterialName = material.relatedMaterial?.name || '';
+                        // 兼容旧数据：'template'/'existing' 都视为需要模版
+                        const relatedIsTemplate = material.relatedMaterial && (material.relatedMaterial.type === 'template' || material.relatedMaterial.type === 'existing');
+                        const relatedTemplateRequiredValue = relatedIsTemplate ? 'true' : 'false';
+                        const relatedTemplateValue = relatedIsTemplate ? relatedMaterialName : '';
+                        const relatedMaterialContainerDisplay = hasRelatedMaterial === 'true' ? 'block' : 'none';
+                        const relatedTemplateSectionDisplay = hasRelatedMaterial === 'true' ? 'inline-flex' : 'none';
+                        const relatedInputDisplay = relatedIsTemplate ? 'none' : 'flex';
+                        const relatedTemplateDisplay = relatedIsTemplate ? 'flex' : 'none';
+                        
                         // 创建材料项HTML
                         const itemHtml = `
-                            <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                                 <div style="display: flex; align-items: center; margin-bottom: 10px;">
                                     <div style="display: flex; align-items: center; margin-right: 10px;">
                                         <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                             <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
                                             <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
                                         </select>
@@ -1437,25 +1955,64 @@
                                         删除
                                     </button>
                                 </div>
+
                                 <div style="width: 100%;">
-                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">AI评估规则：</label>
-                                    <input type="text" value="${material.aiRule || ''}" placeholder="输入AI评估规则..." style="width: calc(100% - 80px); padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                                        <span style="display: flex; align-items: center;">
+                                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">得分权重：</label>
+                                            <input type="number" class="material-weight-input" min="0" step="0.1" value="${material.weight !== undefined && material.weight !== null ? material.weight : ''}" placeholder="请输入" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        </span>
+                                        <span style="display: flex; align-items: center;">
+                                            <label style="margin-left: 12px; font-size: 14px; white-space: nowrap;">有关联材料：</label>
+                                            <select class="related-material-required" style="font-size: 14px; width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                                <option value="false" ${hasRelatedMaterial === 'false' ? 'selected' : ''}>否</option>
+                                                <option value="true" ${hasRelatedMaterial === 'true' ? 'selected' : ''}>是</option>
+                                            </select>
+                                        </span>
+                                        <span class="related-template-section" style="display: ${relatedTemplateSectionDisplay}; align-items: center;">
+                                            <label style="margin-left: 12px; font-size: 14px; white-space: nowrap;">需要模版：</label>
+                                            <select class="related-template-required" style="font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                                <option value="false" ${relatedTemplateRequiredValue === 'false' ? 'selected' : ''}>否</option>
+                                                <option value="true" ${relatedTemplateRequiredValue === 'true' ? 'selected' : ''}>是</option>
+                                            </select>
+                                        </span>
+                                    </div>
+                                    <div class="related-material-container" style="display: ${relatedMaterialContainerDisplay};">
+                                        <div class="related-material-input-container" style="display: ${relatedInputDisplay}; align-items: center; margin-bottom: 10px;">
+                                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">关联材料：</label>
+                                            <input type="text" value="${relatedIsTemplate ? '' : relatedMaterialName}" placeholder="输入关联材料名称..." style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        </div>
+                                        <div class="related-material-template-container" style="display: ${relatedTemplateDisplay}; align-items: center;">
+                                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">关联材料：</label>
+                                            <select class="related-material-template" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                                <option value="">请选择模板</option>
+                                                ${templateOptions.map(option => `<option value="${option.value}" ${option.text === relatedTemplateValue ? 'selected' : ''}>${option.text}</option>`).join('')}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="width: 100%; display: flex; align-items: flex-start; margin-bottom: 0px;">
+                                    <label style="margin-right: 5px; max-width: 70px; font-size: 14px; white-space: nowrap; margin-top: 5px;">AI评估规则：</label>
+                                    <textarea rows="1" placeholder="输入AI评估规则..." oninput="autoResizeTextarea(this)" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px; resize: none; overflow: hidden; font-family: inherit;">${material.aiRule || ''}</textarea>
                                 </div>
                             </div>
                         `;
                         
                         // 添加到容器
                         listContainer.insertAdjacentHTML('beforeend', itemHtml);
-                        
+
                         // 添加事件监听器
                         const item = document.getElementById(itemId);
+                        // 初始化 AI 评估规则 textarea 高度
+                        const aiRuleTextarea = item.querySelector('textarea[placeholder="输入AI评估规则..."]');
+                        if (aiRuleTextarea) {
+                            autoResizeTextarea(aiRuleTextarea);
+                        }
                         const templateRequired = item.querySelector('.template-required');
                         const templateSelectContainer = item.querySelector('.template-select-container');
-            
-                        
+
                         templateRequired.addEventListener('change', function() {
                             const requiresTemplate = this.value === 'true';
-                            
                             // 显示或隐藏对应的输入控件
                             if (requiresTemplate) {
                                 item.querySelector('.material-input-container').style.display = 'none';
@@ -1465,11 +2022,41 @@
                                 templateSelectContainer.style.display = 'none';
                             }
                         });
+
+                        const relatedMaterialRequired = item.querySelector('.related-material-required');
+                        const relatedMaterialContainer = item.querySelector('.related-material-container');
+                        const relatedTemplateSection = item.querySelector('.related-template-section');
+                        const relatedTemplateRequired = item.querySelector('.related-template-required');
+                        const relatedMaterialInputContainer = item.querySelector('.related-material-input-container');
+                        const relatedMaterialTemplateContainer = item.querySelector('.related-material-template-container');
+
+                        if (relatedMaterialRequired) {
+                            relatedMaterialRequired.addEventListener('change', function() {
+                                const hasRelatedMaterial = this.value === 'true';
+                                relatedMaterialContainer.style.display = hasRelatedMaterial ? 'block' : 'none';
+                                if (relatedTemplateSection) {
+                                    relatedTemplateSection.style.display = hasRelatedMaterial ? 'inline-flex' : 'none';
+                                }
+                            });
+                        }
+
+                        if (relatedTemplateRequired) {
+                            relatedTemplateRequired.addEventListener('change', function() {
+                                const requiresTemplate = this.value === 'true';
+                                if (requiresTemplate) {
+                                    relatedMaterialInputContainer.style.display = 'none';
+                                    relatedMaterialTemplateContainer.style.display = 'flex';
+                                } else {
+                                    relatedMaterialInputContainer.style.display = 'flex';
+                                    relatedMaterialTemplateContainer.style.display = 'none';
+                                }
+                            });
+                        }
                     }
                 });
             }
             
-            // 添加专家评估支撑材料项
+            // 添加专家工作材料项
             if (item.expertMaterials) {
                 const expertMaterials = Array.isArray(item.expertMaterials) ? item.expertMaterials.map(m => typeof m === 'object' ? m.name : m) : item.expertMaterials.split('\n');
                 expertMaterials.forEach(material => {
@@ -1501,10 +2088,10 @@
                         
                         // 创建材料项HTML
                         const itemHtml = `
-                            <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                                 <div style="display: flex; align-items: center; margin-right: 10px;">
                                     <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                                    <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                    <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                         <option value="false" ${!isTemplate ? 'selected' : ''}>否</option>
                                         <option value="true" ${isTemplate ? 'selected' : ''}>是</option>
                                     </select>
@@ -1550,8 +2137,10 @@
             }
             
             document.getElementById('indicatorModal').style.display = 'block';
-            // 滚动到顶部
-            document.querySelector('#indicatorModal .modal-content').scrollTop = 0;
+            // 重置左右两栏滚动位置
+            resetIndicatorModalScroll();
+            // 弹窗显示后再计算高度（隐藏状态下 scrollHeight 为 0，算不出正确高度）
+            autoResizeAllTextareas();
         }
 
         // 保存指标
@@ -1562,8 +2151,28 @@
             materialsItems.forEach(item => {
                 const templateRequired = item.querySelector('.template-required').value === 'true';
                 let materialValue = '';
-                const aiRuleInput = item.querySelector('input[placeholder="输入AI评估规则..."]');
+                const aiRuleInput = item.querySelector('[placeholder="输入AI评估规则..."]');
                 const aiRule = aiRuleInput ? aiRuleInput.value.trim() : '';
+                
+                // 处理关联材料
+                const hasRelatedMaterial = item.querySelector('.related-material-required')?.value === 'true';
+                let relatedMaterial = null;
+                if (hasRelatedMaterial) {
+                    const relatedTemplateRequired = item.querySelector('.related-template-required')?.value === 'true';
+                    if (relatedTemplateRequired) {
+                        const relatedSelect = item.querySelector('.related-material-template');
+                        const selectedOption = relatedSelect ? relatedSelect.options[relatedSelect.selectedIndex] : null;
+                        if (selectedOption && selectedOption.text) {
+                            relatedMaterial = { type: 'template', name: selectedOption.text };
+                        }
+                    } else {
+                        const relatedInput = item.querySelector('.related-material-input-container input');
+                        const relatedName = relatedInput ? relatedInput.value.trim() : '';
+                        if (relatedName) {
+                            relatedMaterial = { type: 'custom', name: relatedName };
+                        }
+                    }
+                }
                 
                 if (templateRequired) {
                     const templateSelect = item.querySelector('.template-select');
@@ -1577,11 +2186,18 @@
                 }
                 
                 if (materialValue) {
-                    materials.push({ name: materialValue, aiRule: aiRule });
+                    const weightInput = item.querySelector('.material-weight-input');
+                    const weightValue = weightInput ? weightInput.value.trim() : '';
+                    materials.push({
+                        name: materialValue,
+                        weight: weightValue !== '' ? Number(weightValue) : '',
+                        aiRule: aiRule,
+                        relatedMaterial: relatedMaterial
+                    });
                 }
             });
 
-            // 处理专家评估支撑材料
+            // 处理专家工作材料
             const expertMaterialsItems = document.querySelectorAll('#expertMaterialsList .materials-item');
             const expertMaterials = [];
             expertMaterialsItems.forEach(item => {
@@ -1604,13 +2220,43 @@
                 }
             });
 
+            // 处理定量指标统计表
+            const statisticsItems = document.querySelectorAll('#statisticsList .statistics-item');
+            const statisticsTables = [];
+            let statisticsWeightMissing = null;
+            statisticsItems.forEach(item => {
+                const nameInput = item.querySelector('.statistics-name-input');
+                const weightInput = item.querySelector('.statistics-weight-input');
+                const tableName = nameInput ? nameInput.value.trim() : '';
+                const weightValue = weightInput ? weightInput.value.trim() : '';
+                if (tableName) {
+                    if (weightValue === '' || isNaN(Number(weightValue))) {
+                        if (!statisticsWeightMissing) {
+                            statisticsWeightMissing = tableName;
+                        }
+                        return;
+                    }
+                    statisticsTables.push({
+                        name: tableName,
+                        scoreWeight: Number(weightValue)
+                    });
+                }
+            });
+            if (statisticsWeightMissing) {
+                alert(`请为定量指标「${statisticsWeightMissing}」填写得分权重（数字）！`);
+                return;
+            }
+
             const formData = {
                 level1: document.getElementById('level1Input').value,
                 level2: document.getElementById('level2Input').value,
                 level3: document.getElementById('level3Input').value,
                 weight: document.getElementById('weightInput').value || '0',
+                selfSummaryWeight: document.getElementById('selfSummaryWeightInput').value,
+                selfSummaryAiRule: document.getElementById('selfSummaryAiRuleInput').value,
                 materials: materials,
                 expertMaterials: expertMaterials,
+                statisticsTables: statisticsTables,
                 standard: document.getElementById('standardInput').value
             };
 
@@ -1701,11 +2347,67 @@
             }
         }
 
+        // textarea 根据内容自动适应高度
+        function autoResizeTextarea(textarea) {
+            // 先重置高度为auto，以便获取真实的scrollHeight
+            textarea.style.height = 'auto';
+            
+            // 某些情况下scrollHeight可能为0（如元素刚插入DOM还未完成布局）
+            // 使用requestAnimationFrame确保浏览器完成布局后再计算高度
+            let height = textarea.scrollHeight;
+            // 不低于 CSS 中设定的最小高度（如基本信息字段的 36px）
+            const minHeight = parseFloat(getComputedStyle(textarea).minHeight) || 0;
+            if (height < minHeight) {
+                height = minHeight;
+            }
+            if (height === 0) {
+                requestAnimationFrame(() => {
+                    textarea.style.height = 'auto';
+                    const h = Math.max(textarea.scrollHeight, parseFloat(getComputedStyle(textarea).minHeight) || 0);
+                    textarea.style.height = h + 'px';
+                });
+            } else {
+                textarea.style.height = height + 'px';
+            }
+        }
+
+        // 初始化所有自适应高度文本域（含弹窗基本信息、自评总结、材料项AI评估规则）
+        function autoResizeAllTextareas() {
+            document.querySelectorAll('#indicatorModal textarea.auto-grow').forEach(textarea => {
+                autoResizeTextarea(textarea);
+            });
+            // 材料项中的 AI 评估规则文本域（动态插入，未使用 auto-grow 类）
+            document.querySelectorAll('#indicatorModal textarea[placeholder="输入AI评估规则..."]').forEach(textarea => {
+                autoResizeTextarea(textarea);
+            });
+        }
+
         // 动态添加支撑材料项
         function addMaterialsItem(prefix) {
             const listContainer = document.getElementById(`${prefix}List`);
             const itemCount = listContainer.children.length;
             const itemId = `${prefix}Item_${itemCount}`;
+            
+            // 定量指标统计表：统计表名称 + 得分权重输入框
+            if (prefix === 'statistics') {
+                const itemHtml = `
+                    <div class="materials-item statistics-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <label style="margin-right: 8px; font-size: 14px; white-space: nowrap;">指标名称：</label>
+                            <input type="text" class="statistics-name-input" placeholder="输入定量指标名称..." style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                            <button type="button" onclick="removeMaterialsItem('statistics', '${itemId}')" style="margin-left: 10px; padding: 3px 8px; background-color: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                删除
+                            </button>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">得分权重：</label>
+                            <input type="number" class="statistics-weight-input" min="0" max="100" step="0.01" placeholder="请输入权重值" style="width: 200px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                return;
+            }
             
             // 文档模板选项
             const templateOptions = {
@@ -1725,10 +2427,10 @@
             
             // 创建材料项HTML
             let itemHtml = `
-                <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                <div class="materials-item" id="${itemId}" style="display: flex; align-items: center; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                     <div style="display: flex; align-items: center; margin-right: 10px;">
                         <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                        <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                             <option value="false">否</option>
                             <option value="true">是</option>
                         </select>
@@ -1751,11 +2453,11 @@
             // 只在自评支撑材料中添加AI评估规则输入框
             if (prefix === 'materials') {
                 itemHtml = `
-                    <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                    <div class="materials-item" id="${itemId}" style="display: flex; flex-direction: column; margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
                             <div style="display: flex; align-items: center; margin-right: 10px;">
                                 <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">需要模板：</label>
-                                <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 60px;">
+                                <select class="template-required" style="margin-right: 10px; font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
                                     <option value="false">否</option>
                                     <option value="true">是</option>
                                 </select>
@@ -1773,10 +2475,46 @@
                                 删除
                             </button>
                         </div>
-                        <div style="width: 100%; display: flex; align-items: center;">
-                            <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">AI评估规则：</label>
-                            <input type="text" placeholder="输入AI评估规则..." style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+
+                        <div style="width: 100%;">
+                            <div style="display: flex; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                                <span style="display: flex; align-items: center;">
+                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">得分权重：</label>
+                                    <input type="number" class="material-weight-input" min="0" step="0.1" placeholder="请输入" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                </span>
+                                <span style="display: flex; align-items: center;">
+                                    <label style="margin-left: 12px; font-size: 14px; white-space: nowrap;">有关联材料：</label>
+                                    <select class="related-material-required" style="font-size: 14px; width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        <option value="false">否</option>
+                                        <option value="true">是</option>
+                                    </select>
+                                </span>
+                                <span class="related-template-section" style="display: none; align-items: center;">
+                                    <label style="margin-left: 12px; font-size: 14px; white-space: nowrap;">需要模版：</label>
+                                    <select class="related-template-required" style="font-size: 14px; min-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        <option value="false">否</option>
+                                        <option value="true">是</option>
+                                    </select>
+                                </span>
+                            </div>
+                            <div class="related-material-container" style="display: none;">
+                                <div class="related-material-input-container" style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">关联材料：</label>
+                                    <input type="text" placeholder="输入关联材料名称..." style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                </div>
+                                <div class="related-material-template-container" style="display: none; align-items: center;">
+                                    <label style="margin-right: 5px; font-size: 14px; white-space: nowrap;">关联材料：</label>
+                                    <select class="related-material-template" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                        <option value="">请选择模板</option>
+                                        ${templateOptions[prefix].map(option => `<option value="${option.value}">${option.text}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+                        <div style="width: 100%; display: flex; align-items: flex-start; margin-bottom: 0px;">
+                            <label style="margin-right: 5px; max-width: 70px; font-size: 14px; white-space: nowrap; margin-top: 5px;">AI评估规则：</label>
+                            <textarea rows="1" placeholder="输入AI评估规则..." oninput="autoResizeTextarea(this)" style="flex: 1; padding: 5px; border: 1px solid #ddd; border-radius: 3px; resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                        </div>   
                     </div>
                 `;
             }
@@ -1805,6 +2543,39 @@
                     templateSelectContainer.style.display = 'none';
                 }
             });
+            
+            // 添加关联材料事件监听器（仅自评支撑材料）
+            if (prefix === 'materials') {
+                const relatedMaterialRequired = item.querySelector('.related-material-required');
+                const relatedMaterialContainer = item.querySelector('.related-material-container');
+                const relatedTemplateSection = item.querySelector('.related-template-section');
+                const relatedTemplateRequired = item.querySelector('.related-template-required');
+                const relatedMaterialInputContainer = item.querySelector('.related-material-input-container');
+                const relatedMaterialTemplateContainer = item.querySelector('.related-material-template-container');
+
+                // 有关联材料选择事件
+                relatedMaterialRequired.addEventListener('change', function() {
+                    const hasRelatedMaterial = this.value === 'true';
+                    relatedMaterialContainer.style.display = hasRelatedMaterial ? 'block' : 'none';
+                    if (relatedTemplateSection) {
+                        relatedTemplateSection.style.display = hasRelatedMaterial ? 'inline-flex' : 'none';
+                    }
+                });
+
+                // 需要模版选择事件
+                if (relatedTemplateRequired) {
+                    relatedTemplateRequired.addEventListener('change', function() {
+                        const requiresTemplate = this.value === 'true';
+                        if (requiresTemplate) {
+                            relatedMaterialInputContainer.style.display = 'none';
+                            relatedMaterialTemplateContainer.style.display = 'flex';
+                        } else {
+                            relatedMaterialInputContainer.style.display = 'flex';
+                            relatedMaterialTemplateContainer.style.display = 'none';
+                        }
+                    });
+                }
+            }
         }
 
         // 删除支撑材料项
