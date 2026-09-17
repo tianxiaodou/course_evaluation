@@ -781,10 +781,14 @@
                     <div class="modal-column">
                         <h3 class="modal-column-title">系统打分办法</h3>
                         <div class="modal-column-body">
-                            <!-- 自评总结：权重 + AI评估规则 -->
+                            <!-- 自评总结：撰写提示 + 权重 + AI评估规则 -->
                             <div class="form-group">
                                 <label>自评总结：</label>
                                 <div class="boxed-section">
+                                    <div class="boxed-field boxed-field-inline">
+                                        <label for="selfSummaryPromptInput" style="font-size: 14px; max-width: 70px;">撰写提示：</label>
+                                        <textarea id="selfSummaryPromptInput" class="basic-input auto-grow" rows="1" placeholder="请输入撰写提示..." oninput="autoResizeTextarea(this)" style="resize: none; overflow: hidden; font-family: inherit;"></textarea>
+                                    </div>
                                     <div class="boxed-field boxed-field-inline">
                                         <label for="selfSummaryWeightInput" style="font-size: 14px; margin-right: 0px;">得分权重：</label>
                                         <input type="number" id="selfSummaryWeightInput" class="basic-input" min="0" step="0.1" placeholder="请输入权重值...">
@@ -973,6 +977,7 @@
                 level2: "1.1 课程目标定位",
                 level3: "1.1.1课程目标定位准确，符合学校办学定位和人才培养目标",
                 weight: 4,
+                selfSummaryPrompt: "请围绕本课程目标的定位撰写自评总结：先说明课程目标的制定依据，再阐明其与学校办学定位、专业人才培养目标及毕业要求的对应关系，明确课程目标对人才培养的支撑作用。建议结合课程教学大纲、专业人才培养方案、课程目标设定说明文档等材料逐条论证，避免只作笼统描述。",
                 selfSummaryWeight: 0.5,
                 selfSummaryAiRule: "自评总结应说明课程目标与学校办学定位、专业人才培养目标的对应关系，并附相应支撑材料。",
                 materials: [
@@ -1842,7 +1847,8 @@
             document.getElementById('level3Input').value = item.level3;
             document.getElementById('weightInput').value = item.weight || '';
             document.getElementById('standardInput').value = item.standard || '';
-            // 自评总结：权重 + AI评估规则
+            // 自评总结：撰写提示 + 权重 + AI评估规则
+            document.getElementById('selfSummaryPromptInput').value = item.selfSummaryPrompt || '';
             // 兼容旧数据：早期版本把数字存在 selfSummaryWeight 中
             const selfSummaryWeightInput = document.getElementById('selfSummaryWeightInput');
             if (item.selfSummaryWeight !== undefined && item.selfSummaryWeight !== null && item.selfSummaryWeight !== '') {
@@ -2252,6 +2258,7 @@
                 level2: document.getElementById('level2Input').value,
                 level3: document.getElementById('level3Input').value,
                 weight: document.getElementById('weightInput').value || '0',
+                selfSummaryPrompt: document.getElementById('selfSummaryPromptInput').value,
                 selfSummaryWeight: document.getElementById('selfSummaryWeightInput').value,
                 selfSummaryAiRule: document.getElementById('selfSummaryAiRuleInput').value,
                 materials: materials,
