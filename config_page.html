@@ -118,6 +118,36 @@
         .type-badge.calc { background: #cce5ff; color: #004085; }
         .type-badge.text_analysis { background: #d4edda; color: #155724; }
 
+        .major-type-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .major-type-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .major-type-tag.wenke { background: #fde8e8; color: #9b2c2c; }
+        .major-type-tag.like { background: #e6f0ff; color: #1e40af; }
+        .major-type-tag.gongke { background: #e8f5e9; color: #2e7d32; }
+        .major-type-tag.all { background: #ece9ff; color: #4c3d99; }
+
+        .major-type-checks { display: flex; gap: 20px; margin-top: 4px; }
+        .major-type-checks label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: normal;
+            color: #333;
+            cursor: pointer;
+        }
+        .major-type-checks input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
         .field-tags { display: flex; flex-wrap: wrap; gap: 6px; }
         .field-tag-sm {
             background: #e8ecf7;
@@ -337,6 +367,7 @@
                             <thead>
                                 <tr>
                                     <th style="width:60px;">序号</th>
+                                    <th style="width:220px;">适用专业类型</th>
                                     <th>规则描述</th>
                                     <th style="width:120px;">规则类型</th>
                                     <th style="width:130px;">操作</th>
@@ -412,6 +443,15 @@
                 </div>
             </div>
             <div class="form-group">
+                <label>适用专业类型 <span style="color:#999;font-weight:normal;">(可多选)</span></label>
+                <div class="major-type-checks">
+                    <label><input type="checkbox" class="major-type-cb major-type-all" value="全部" onchange="onMajorTypeAll(this)"> 全部</label>
+                    <label><input type="checkbox" class="major-type-cb" value="文科类" onchange="onMajorTypeItem()"> 文科类</label>
+                    <label><input type="checkbox" class="major-type-cb" value="理科类" onchange="onMajorTypeItem()"> 理科类</label>
+                    <label><input type="checkbox" class="major-type-cb" value="工科类" onchange="onMajorTypeItem()"> 工科类</label>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>规则描述 <span style="color:red;">*</span></label>
                 <textarea id="ruleContent" rows="3" placeholder="描述评估规则..."></textarea>
             </div>
@@ -432,8 +472,6 @@
                             <option value="field_aggregate">field_aggregate - 字段聚合比较</option>
                             <option value="cross_chapter_compare">cross_chapter_compare - 跨章节对比</option>
                             <option value="lookup_aggregate">lookup_aggregate - 跨表查找聚合</option>
-                            <option value="custom_sql">custom_sql - 自定义SQL</option>
-                            <option value="fallback_llm">fallback_llm - LLM综合判定</option>
                         </select>
                     </div>
                 </div>
@@ -481,11 +519,12 @@
             { chapter_name: "一、专业历史沿革和特色", rule_type: "text_analysis", rule_content: "专业简介应包含专业历史沿革、特色优势、发展方向等内容" },
             { chapter_name: "二、培养目标", rule_type: "text_analysis", rule_content: "培养目标应体现德智体美劳全面发展要求" },
             { chapter_name: "三、毕业要求", rule_type: "text_analysis", rule_content: "根据专业培养目标对毕业要求进一步细化", context_chapters: ["二、培养目标"] },
-            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "专业核心课应控制在8门左右（7~9门）", computation: { type: "direct_compare", source_chapters: ["八、核心课程"], field: "核心课程名称", aggregation: "count", comparison: "range", min_value: 7, max_value: 9 } },
-            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "所有核心课程的学分总和应介于20~26学分", computation: { type: "lookup_aggregate", lookup_chapter: "八、核心课程", lookup_field: "核心课程名称", target_chapter: "十二、教学进程计划表", target_match_field: "课程名称", target_aggregate_field: "学分", aggregation: "sum", comparison: "range", min_value: 20, max_value: 26 } },
-            { chapter_name: "七、毕业学分要求", rule_type: "calculation", rule_content: "毕业总学分应≥160学分", computation: { type: "table_field_sum", source_chapters: ["七、毕业学分要求"], field: "学分", comparison: "gte", target_value: 160 } },
-            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "专业选修课学分总和应≥20学分", computation: { type: "table_field_sum", source_chapters: ["九、课程设置结构比例表"], filter: {field:"课程性质",value:"专业选修课"}, field: "学分", comparison: "gte", target_value: 20 } },
-            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "实践教学学分与教学进程计划表中实践学时对应学分应一致", computation: { type: "cross_chapter_compare", left: {chapter:"九、课程设置结构比例表",field:"学分",aggregation:"sum",filter:{field:"课程类别",value:"其中，实践教学学分占总学分比例①"}}, right: {chapter:"十二、教学进程计划表",row_transform:{type:"hours_to_credits",hours_fields:["实验学时","上机学时","社会实践学时","实训学时"],total_hours_field:"总计学时",credits_field:"学分"}}, comparison: "eq" } },
+            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "专业核心课应控制在8门左右（7~9门）", major_types: ["理科类", "工科类"], computation: { type: "field_aggregate", source_chapters: ["八、核心课程"], field: "核心课程名称", aggregation: "count", comparison: "range", min_value: 7, max_value: 9 } },
+            { chapter_name: "八、核心课程", rule_type: "calculation", rule_content: "所有核心课程的学分总和应介于20~26学分", major_types: ["理科类", "工科类"], computation: { type: "lookup_aggregate", lookup_chapter: "八、核心课程", lookup_field: "核心课程名称", target_chapter: "十二、教学进程计划表", target_match_field: "课程名称", target_aggregate_field: "学分", aggregation: "sum", comparison: "range", min_value: 20, max_value: 26 } },
+            { chapter_name: "七、毕业学分要求", rule_type: "calculation", rule_content: "毕业总学分应≥160学分", computation: { type: "field_aggregate", source_chapters: ["七、毕业学分要求"], field: "学分", aggregation: "sum", comparison: "gte", target_value: 160 } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "专业选修课学分总和应≥20学分", major_types: ["理科类", "工科类"], computation: { type: "field_aggregate", source_chapters: ["九、课程设置结构比例表"], filter: {field:"课程性质",value:"专业选修课"}, field: "学分", aggregation: "sum", comparison: "gte", target_value: 20 } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "理工科实践教学累计学分占总学分比例不少于25%", major_types: ["工科类"], computation: { type: "field_aggregate", source_chapters: ["九、课程设置结构比例表"], filter: {field:"课程类别",value:"其中，实践教学学分占总学分比例①"}, field: "占总学分比例", aggregation: "sum", comparison: "gte", target_value: 25 } },
+            { chapter_name: "九、课程设置结构比例表", rule_type: "calculation", rule_content: "实践教学学分与教学进程计划表中实践学时对应学分应一致", major_types: ["工科类"], computation: { type: "cross_chapter_compare", left: {chapter:"九、课程设置结构比例表",field:"学分",aggregation:"sum",filter:{field:"课程类别",value:"其中，实践教学学分占总学分比例①"}}, right: {chapter:"十二、教学进程计划表",row_transform:{type:"hours_to_credits",hours_fields:["实验学时","上机学时","社会实践学时","实训学时"],total_hours_field:"总计学时",credits_field:"学分"}}, comparison: "eq" } },
             { chapter_name: "九、课程设置结构比例表", rule_type: "text_analysis", rule_content: "课程设置结构比例应合理，各类课程比例协调" },
             { chapter_name: "十二、教学进程计划表", rule_type: "text_analysis", rule_content: "教学进程安排应合理，课程学期分布均衡" }
         ];
@@ -564,10 +603,16 @@
                 const rt = r.rule_type === 'calculation' ? '计算类' : '文本分析';
                 const rtCls = r.rule_type === 'calculation' ? 'calc' : 'text_analysis';
                 const desc = r.rule_content || '-';
+                // 专业类型标签
+                const typeCls = { '全部': 'all', '文科类': 'wenke', '理科类': 'like', '工科类': 'gongke' };
+                const majorTypes = (r.major_types && r.major_types.length)
+                    ? r.major_types.map(t => `<span class="major-type-tag ${typeCls[t]||''}">${t}</span>`).join('')
+                    : '<span style="color:#bbb;">全部</span>';
                 // 找到这条规则在全局 rules 数组中的真实索引
                 const realIdx = rules.indexOf(r);
                 tr.innerHTML = `
                     <td>${i+1}</td>
+                    <td><div class="major-type-tags">${majorTypes}</div></td>
                     <td>${desc}</td>
                     <td><span class="type-badge ${rtCls}">${rt}</span></td>
                     <td>
@@ -648,12 +693,23 @@
             document.getElementById("ruleEditIndex").value = index >= 0 ? index : -1;
             document.getElementById("ruleContextList").innerHTML = '';
             document.getElementById("compParams").innerHTML = '';
+            // 清空专业类型复选框
+            document.querySelectorAll('.major-type-cb').forEach(cb => cb.checked = false);
 
             if (index >= 0) {
                 const r = rules[index];
                 document.getElementById("ruleChapter").value = r.chapter_name || '';
                 document.getElementById("ruleType").value = r.rule_type || 'text_analysis';
                 document.getElementById("ruleContent").value = r.rule_content || '';
+                // 回填专业类型复选框
+                if (r.major_types && r.major_types.length) {
+                    document.querySelectorAll('.major-type-cb').forEach(cb => {
+                        if (r.major_types.includes(cb.value)) cb.checked = true;
+                    });
+                } else {
+                    // 未指定时默认勾选「全部」
+                    document.querySelector('.major-type-all').checked = true;
+                }
                 toggleRuleModalType();
                 if (r.rule_type === 'text_analysis' && r.context_chapters) {
                     r.context_chapters.forEach(ctx => {
@@ -668,6 +724,8 @@
                 document.getElementById("ruleChapter").value = currentRuleChapter || '';
                 document.getElementById("ruleType").value = 'text_analysis';
                 document.getElementById("ruleContent").value = '';
+                // 新增时默认勾选「全部」
+                document.querySelector('.major-type-all').checked = true;
                 toggleRuleModalType();
                 document.getElementById("compType").value = 'field_aggregate';
                 renderModalComp();
@@ -681,7 +739,14 @@
             const ruleContent = document.getElementById("ruleContent").value.trim();
             if (!chapterName) { alert("请输入关联章节"); return; }
             if (!ruleContent) { alert("请输入规则描述"); return; }
+            // 收集专业类型（勾选「全部」或未勾选任何项时，视为全部，不写 major_types 字段）
+            const checkedAll = document.querySelector('.major-type-all').checked;
+            const majorTypes = [];
+            if (!checkedAll) {
+                document.querySelectorAll('.major-type-cb:not(.major-type-all):checked').forEach(cb => majorTypes.push(cb.value));
+            }
             const rule = { chapter_name: chapterName, rule_type: ruleType, rule_content: ruleContent };
+            if (majorTypes.length > 0) rule.major_types = majorTypes;
             if (ruleType === 'text_analysis') {
                 const ctx = [];
                 document.querySelectorAll('#ruleContextList .field-tag-sm').forEach(el => ctx.push(el.textContent));
@@ -706,6 +771,19 @@
             const isCalc = document.getElementById("ruleType").value === 'calculation';
             document.getElementById("ruleContextSection").style.display = isCalc ? 'none' : 'block';
             document.getElementById("ruleCompSection").style.display = isCalc ? 'block' : 'none';
+        }
+
+        // 「全部」勾选时清空其他；勾选具体类型时取消「全部」
+        function onMajorTypeAll(cbAll) {
+            if (cbAll.checked) {
+                document.querySelectorAll('.major-type-cb:not(.major-type-all)').forEach(cb => cb.checked = false);
+            }
+        }
+        function onMajorTypeItem() {
+            const anyItem = document.querySelector('.major-type-cb:not(.major-type-all):checked');
+            if (anyItem) {
+                document.querySelector('.major-type-all').checked = false;
+            }
         }
 
         function addModalContext() {
@@ -735,21 +813,23 @@
                 {k:'filter_field',l:'筛选字段(可选)',t:'text',p:'课程性质'},
                 {k:'filter_value',l:'筛选值(可选)',t:'text',p:'专业选修课'},
                 {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','gt','lt','range']},
-                {k:'target_value',l:'目标值',t:'number',p:'20'},
-                {k:'min_value',l:'range下限',t:'number',p:'30'},
-                {k:'max_value',l:'range上限',t:'number',p:'50'}
+                {k:'target_value',l:'目标值',t:'number',p:'20',showIf:'notInRange'},
+                {k:'min_value',l:'range下限',t:'number',p:'30',showIf:'isRange'},
+                {k:'max_value',l:'range上限',t:'number',p:'50',showIf:'isRange'}
             ],
             cross_chapter_compare: [
                 {k:'left_chapter',l:'左侧-章节',t:'text',p:'九、课程设置结构比例表'},
                 {k:'left_field',l:'左侧-字段',t:'text',p:'学分'},
                 {k:'left_aggregation',l:'左侧-聚合',t:'select',o:['sum','count','avg','max','min']},
+                {k:'left_filter_field',l:'左侧-筛选字段(可选)',t:'text',p:'课程类别'},
+                {k:'left_filter_value',l:'左侧-筛选值(可选)',t:'text',p:'其中，实践教学学分占总学分比例①'},
                 {k:'right_chapter',l:'右侧-章节',t:'text',p:'十二、教学进程计划表'},
-                {k:'right_mode',l:'右侧模式',t:'select',o:['field','fields','hours_to_credits']},
-                {k:'right_field',l:'右侧-字段(单字段模式)',t:'text',p:'学分'},
-                {k:'right_fields',l:'右侧-多字段(逗号分隔)',t:'text',p:'实验学时,上机学时'},
-                {k:'right_hours',l:'学时转学分-学时字段(逗号分隔)',t:'text',p:'实验学时,上机学时,社会实践学时,实训学时'},
-                {k:'right_total_hours',l:'学时转学分-总计学时字段',t:'text',p:'总计学时'},
-                {k:'right_credits',l:'学时转学分-学分字段',t:'text',p:'学分'},
+                {k:'right_mode',l:'右侧模式',t:'select',o:['field','fields','hours_to_credits'],isModeCtrl:true},
+                {k:'right_field',l:'右侧-字段',t:'text',p:'学分',showIf:'rightMode=field'},
+                {k:'right_fields',l:'右侧-多字段(逗号分隔)',t:'text',p:'实验学时,上机学时',showIf:'rightMode=fields'},
+                {k:'right_hours',l:'学时转学分-学时字段(逗号分隔)',t:'text',p:'实验学时,上机学时,社会实践学时,实训学时',showIf:'rightMode=hours_to_credits'},
+                {k:'right_total_hours',l:'学时转学分-总计学时字段',t:'text',p:'总计学时',showIf:'rightMode=hours_to_credits'},
+                {k:'right_credits',l:'学时转学分-学分字段',t:'text',p:'学分',showIf:'rightMode=hours_to_credits'},
                 {k:'comparison',l:'比较方式',t:'select',o:['eq','neq','gte','lte']}
             ],
             lookup_aggregate: [
@@ -760,12 +840,10 @@
                 {k:'target_aggregate_field',l:'目标聚合字段',t:'text',p:'学分'},
                 {k:'aggregation',l:'聚合方式',t:'select',o:['sum','count','avg','max','min']},
                 {k:'comparison',l:'比较方式',t:'select',o:['gte','lte','eq','range']},
-                {k:'target_value',l:'目标值',t:'number',p:'23'}
-            ],
-            custom_sql: [
-                {k:'sql_template',l:'SQL 语句',t:'textarea',p:'SELECT COUNT(*) FROM chapter_data WHERE chapter_name=? AND material_id=?'}
-            ],
-            fallback_llm: []
+                {k:'target_value',l:'目标值',t:'number',p:'23',showIf:'notInRange'},
+                {k:'min_value',l:'range下限',t:'number',p:'20',showIf:'isRange'},
+                {k:'max_value',l:'range上限',t:'number',p:'26',showIf:'isRange'}
+            ]
         };
 
         function renderModalComp(values) {
@@ -773,12 +851,39 @@
             const tmpl = COMP_TMPL[type];
             const container = document.getElementById("compParams");
             if (!tmpl) { container.innerHTML = ''; return; }
-            const v = (k) => { if (!values) return ''; const m = vmap(k, values); return m || ''; };
+
+            // 保留用户已填的内容，重绘时不丢失
+            const preserve = {};
+            container.querySelectorAll('[class^="mcomp-"]').forEach(el => {
+                const k = (el.className.match(/mcomp-(\S+)/)||[])[1];
+                if (k) preserve[k] = el.value;
+            });
+            const v = (k) => {
+                if (preserve[k] !== undefined) return preserve[k];
+                if (!values) return '';
+                const m = vmap(k, values);
+                return m || '';
+            };
+
+            // 读取当前联动状态
+            const curComparison = preserve['comparison'] || (values && values.comparison) || (tmpl.find(f=>f.k==='comparison')?.o||[])[0] || '';
+            const curRightMode = preserve['right_mode'] || (values && vmap('right_mode', values)) || 'field';
+
+            const shouldShow = (f) => {
+                if (!f.showIf) return true;
+                if (f.showIf === 'isRange') return curComparison === 'range';
+                if (f.showIf === 'notInRange') return curComparison !== 'range';
+                if (f.showIf.startsWith('rightMode=')) return curRightMode === f.showIf.split('=')[1];
+                return true;
+            };
+
             let html = '<div class="form-row" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">';
             tmpl.forEach(f => {
+                if (!shouldShow(f)) return;
                 html += `<div class="form-group"><label>${f.l}</label>`;
                 if (f.t === 'select') {
-                    html += `<select class="mcomp-${f.k}">`;
+                    const oc = (f.isModeCtrl || f.k === 'comparison') ? ' onchange="renderModalComp()"' : '';
+                    html += `<select class="mcomp-${f.k}"${oc}>`;
                     (f.o||[]).forEach(o => html += `<option value="${o}" ${v(f.k)===o?'selected':''}>${o}</option>`);
                     html += '</select>';
                 } else if (f.t === 'textarea') {
@@ -799,6 +904,8 @@
             if (k === 'left_chapter' && values.left) return values.left.chapter||'';
             if (k === 'left_field' && values.left) return values.left.field||'';
             if (k === 'left_aggregation' && values.left) return values.left.aggregation||'';
+            if (k === 'left_filter_field' && values.left && values.left.filter) return values.left.filter.field||'';
+            if (k === 'left_filter_value' && values.left && values.left.filter) return values.left.filter.value||'';
             if (k === 'right_chapter' && values.right) return values.right.chapter||'';
             if (k === 'right_mode') {
                 if (values.right && values.right.row_transform) return 'hours_to_credits';
@@ -831,6 +938,8 @@
                 else {comp.target_value=parseFloat(g('target_value'))||0;}
             } else if (type==='cross_chapter_compare') {
                 comp.left={chapter:g('left_chapter')||'',field:g('left_field')||'',aggregation:g('left_aggregation')||'sum'};
+                const lff=g('left_filter_field'), lfv=g('left_filter_value');
+                if (lff && lfv) comp.left.filter = {field:lff, value:lfv};
                 comp.right={chapter:g('right_chapter')||''};
                 const rm=g('right_mode');
                 if (rm==='hours_to_credits') {comp.right.row_transform={type:'hours_to_credits',hours_fields:g('right_hours').split(',').map(s=>s.trim()).filter(Boolean),total_hours_field:g('right_total_hours')||'总计学时',credits_field:g('right_credits')||'学分'};}
@@ -844,8 +953,7 @@
                 comp.aggregation=g('aggregation')||'sum';comp.comparison=g('comparison');
                 if (comp.comparison==='range'){comp.min_value=parseFloat(g('min_value'))||0;comp.max_value=parseFloat(g('max_value'))||0;}
                 else {comp.target_value=parseFloat(g('target_value'))||0;}
-            } else if (type==='custom_sql') {comp.sql_template=g('sql_template');}
-            else if (type==='fallback_llm') { /* 无参数 */ }
+            }
             return comp;
         }
 
